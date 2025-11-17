@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Обращения - {{ org_short_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Обращения</h1>
+    <a href="{{ url_for('appeal_create') }}" class="btn btn-primary">Создать обращение</a>
+</div>
+
+{% if appeals.items %}
+    <div class="appeals-list">
+        {% for appeal in appeals.items %}
+        <div class="appeal-card">
+            <div class="appeal-header">
+                <span class="appeal-status status-{{ appeal.status }}">{{ appeal.status }}</span>
+                <span class="appeal-category">{{ appeal.category }}</span>
+            </div>
+            <h3>{{ appeal.title }}</h3>
+            <p>{{ appeal.content[:200] }}{% if appeal.content|length > 200 %}...{% endif %}</p>
+            <div class="appeal-meta">
+                <span>Создано: {{ appeal.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                {% if appeal.author %}
+                    <span>Автор: {{ appeal.author.full_name }}</span>
+                {% else %}
+                    <span>Автор: {{ appeal.contact_name or 'Анонимный' }}</span>
+                {% endif %}
+                {% if appeal.assigned_to %}
+                    <span>Ответственный: {{ appeal.assigned_to.full_name }}</span>
+                {% endif %}
+            </div>
+            {% if appeal.response %}
+                <div class="appeal-response">
+                    <strong>Ответ:</strong>
+                    <p>{{ appeal.response[:150] }}{% if appeal.response|length > 150 %}...{% endif %}</p>
+                </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if appeals.pages > 1 %}
+    <div class="pagination">
+        {% if appeals.has_prev %}
+            <a href="{{ url_for('appeals_list', page=appeals.prev_num) }}" class="btn btn-sm">&laquo; Назад</a>
+        {% endif %}
+        <span>Страница {{ appeals.page }} из {{ appeals.pages }}</span>
+        {% if appeals.has_next %}
+            <a href="{{ url_for('appeals_list', page=appeals.next_num) }}" class="btn btn-sm">Вперед &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+{% else %}
+    <p class="empty-state">Обращений пока нет</p>
+{% endif %}
+{% endblock %}

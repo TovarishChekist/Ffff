@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Личный кабинет - {{ org_short_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Личный кабинет</h1>
+    <p>Добро пожаловать, {{ current_user.full_name }}!</p>
+</div>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <h3>{{ stats.events_count }}</h3>
+        <p>Мероприятий</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ stats.projects_count }}</h3>
+        <p>Проектов</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ stats.votes_participated }}</h3>
+        <p>Голосований</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ stats.documents_uploaded }}</h3>
+        <p>Документов</p>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <section class="section">
+        <h2>Ближайшие мероприятия</h2>
+        {% if events %}
+            <div class="events-list">
+                {% for event in events %}
+                <div class="event-card">
+                    <div class="event-date">
+                        <span class="day">{{ event.start_datetime.strftime('%d') }}</span>
+                        <span class="month">{{ event.start_datetime.strftime('%b') }}</span>
+                    </div>
+                    <div class="event-info">
+                        <h3><a href="{{ url_for('event_detail', event_id=event.id) }}">{{ event.title }}</a></h3>
+                        <p class="event-time">{{ event.start_datetime.strftime('%H:%M') }}</p>
+                        {% if event.location %}
+                            <p class="event-location">{{ event.location }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-state">У вас пока нет запланированных мероприятий</p>
+        {% endif %}
+    </section>
+
+    <section class="section">
+        <h2>Мои задачи</h2>
+        {% if tasks %}
+            <div class="tasks-list">
+                {% for task in tasks %}
+                <div class="task-item">
+                    <div class="task-priority priority-{{ task.priority }}"></div>
+                    <div class="task-info">
+                        <h4>{{ task.title }}</h4>
+                        <p>Проект: <a href="{{ url_for('project_detail', project_id=task.project_id) }}">{{ task.project.title }}</a></p>
+                        {% if task.due_date %}
+                            <p class="task-due">Срок: {{ task.due_date.strftime('%d.%m.%Y') }}</p>
+                        {% endif %}
+                    </div>
+                    <span class="task-status status-{{ task.status }}">{{ task.status }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-state">У вас нет активных задач</p>
+        {% endif %}
+    </section>
+</div>
+
+<div class="quick-actions">
+    <h2>Быстрые действия</h2>
+    <div class="actions-grid">
+        <a href="{{ url_for('events_list') }}" class="action-card">Все мероприятия</a>
+        <a href="{{ url_for('votes_list') }}" class="action-card">Голосования</a>
+        <a href="{{ url_for('projects_list') }}" class="action-card">Проекты</a>
+        <a href="{{ url_for('documents_list') }}" class="action-card">Документы</a>
+        <a href="{{ url_for('appeal_create') }}" class="action-card">Создать обращение</a>
+        <a href="{{ url_for('profile') }}" class="action-card">Мой профиль</a>
+    </div>
+</div>
+{% endblock %}

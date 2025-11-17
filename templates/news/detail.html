@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}{{ news.title }} - {{ org_short_name }}{% endblock %}
+
+{% block content %}
+<article class="news-article">
+    {% if news.is_important %}
+        <span class="badge badge-important">Важно</span>
+    {% endif %}
+
+    <h1>{{ news.title }}</h1>
+
+    <div class="article-meta">
+        <span>{{ news.published_at.strftime('%d.%m.%Y %H:%M') }}</span>
+        <span>Автор: {{ news.author.full_name }}</span>
+        <span>Просмотров: {{ news.views_count }}</span>
+    </div>
+
+    {% if news.image %}
+        <div class="article-image">
+            <img src="{{ url_for('static', filename='uploads/' + news.image) }}" alt="{{ news.title }}">
+        </div>
+    {% endif %}
+
+    <div class="article-content">
+        {{ news.content|safe }}
+    </div>
+
+    <div class="article-footer">
+        <a href="{{ url_for('news_list') }}" class="btn btn-secondary">Назад к новостям</a>
+    </div>
+</article>
+
+{% if comments %}
+<section class="comments-section">
+    <h2>Комментарии ({{ comments|length }})</h2>
+    <div class="comments-list">
+        {% for comment in comments %}
+        <div class="comment-item">
+            <div class="comment-author">
+                <strong>{{ comment.author.full_name }}</strong>
+                <span class="comment-date">{{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+            </div>
+            <div class="comment-content">
+                {{ comment.content }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}

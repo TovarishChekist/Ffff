@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Проекты - {{ org_short_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Проекты</h1>
+</div>
+
+{% if projects.items %}
+    <div class="projects-grid">
+        {% for project in projects.items %}
+        <div class="project-card">
+            <div class="project-header">
+                <span class="project-status status-{{ project.status }}">{{ project.status }}</span>
+            </div>
+            <h2><a href="{{ url_for('project_detail', project_id=project.id) }}">{{ project.title }}</a></h2>
+            {% if project.description %}
+                <p>{{ project.description[:200] }}{% if project.description|length > 200 %}...{% endif %}</p>
+            {% endif %}
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ project.progress }}%"></div>
+                <span class="progress-text">{{ project.progress }}%</span>
+            </div>
+            <div class="project-meta">
+                <span>Участников: {{ project.members|length }}</span>
+                <span>Задач: {{ project.tasks.count() }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if projects.pages > 1 %}
+    <div class="pagination">
+        {% if projects.has_prev %}
+            <a href="{{ url_for('projects_list', page=projects.prev_num) }}" class="btn btn-sm">&laquo; Назад</a>
+        {% endif %}
+        <span>Страница {{ projects.page }} из {{ projects.pages }}</span>
+        {% if projects.has_next %}
+            <a href="{{ url_for('projects_list', page=projects.next_num) }}" class="btn btn-sm">Вперед &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+{% else %}
+    <p class="empty-state">Проектов пока нет</p>
+{% endif %}
+{% endblock %}

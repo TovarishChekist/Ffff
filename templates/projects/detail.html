@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.title }} - {{ org_short_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ project.title }}</h1>
+    <span class="project-status status-{{ project.status }}">{{ project.status }}</span>
+</div>
+
+<div class="content-layout">
+    <div class="main-content">
+        <section class="section">
+            <h2>Описание</h2>
+            {% if project.description %}
+                <p>{{ project.description }}</p>
+            {% else %}
+                <p class="text-muted">Описание отсутствует</p>
+            {% endif %}
+        </section>
+
+        <section class="section">
+            <h2>Прогресс</h2>
+            <div class="progress-bar-large">
+                <div class="progress-fill" style="width: {{ project.progress }}%"></div>
+                <span class="progress-text">{{ project.progress }}%</span>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Задачи</h2>
+            {% if tasks %}
+                <div class="tasks-list">
+                    {% for task in tasks %}
+                    <div class="task-item">
+                        <div class="task-priority priority-{{ task.priority }}"></div>
+                        <div class="task-info">
+                            <h4>{{ task.title }}</h4>
+                            {% if task.description %}
+                                <p>{{ task.description }}</p>
+                            {% endif %}
+                            {% if task.assignee %}
+                                <p class="task-assignee">Ответственный: {{ task.assignee.full_name }}</p>
+                            {% endif %}
+                            {% if task.due_date %}
+                                <p class="task-due">Срок: {{ task.due_date.strftime('%d.%m.%Y') }}</p>
+                            {% endif %}
+                        </div>
+                        <span class="task-status status-{{ task.status }}">{{ task.status }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty-state">Задач пока нет</p>
+            {% endif %}
+        </section>
+
+        <section class="section">
+            <h2>Участники ({{ project.members|length }})</h2>
+            {% if project.members %}
+                <div class="participants-list">
+                    {% for member in project.members %}
+                        <div class="participant-item">
+                            <span>{{ member.full_name }}</span>
+                            <span class="participant-role">{{ member.role }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty-state">Участников пока нет</p>
+            {% endif %}
+        </section>
+    </div>
+
+    <div class="sidebar">
+        <div class="info-panel">
+            <h3>Информация</h3>
+            <dl>
+                {% if project.start_date %}
+                <dt>Начало:</dt>
+                <dd>{{ project.start_date.strftime('%d.%m.%Y') }}</dd>
+                {% endif %}
+
+                {% if project.end_date %}
+                <dt>Окончание:</dt>
+                <dd>{{ project.end_date.strftime('%d.%m.%Y') }}</dd>
+                {% endif %}
+
+                <dt>Создатель:</dt>
+                <dd>{{ project.creator.full_name }}</dd>
+
+                <dt>Создано:</dt>
+                <dd>{{ project.created_at.strftime('%d.%m.%Y') }}</dd>
+            </dl>
+        </div>
+
+        <div class="actions-panel">
+            <h3>Действия</h3>
+            <a href="{{ url_for('projects_list') }}" class="btn btn-secondary btn-block">Назад к списку</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

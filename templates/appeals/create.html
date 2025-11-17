@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Создать обращение - {{ org_short_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Создать обращение</h1>
+</div>
+
+<div class="info-box">
+    <p>Вы можете обратиться к Уполномоченному по правам ребёнка по любому вопросу, касающемуся прав детей и молодежи.</p>
+    <p>Обращение будет рассмотрено в установленные законом сроки.</p>
+</div>
+
+<form method="POST" action="{{ url_for('appeal_create') }}" class="form-standard">
+    <div class="form-group">
+        <label for="title">Тема обращения *</label>
+        <input type="text" id="title" name="title" class="form-control" required>
+    </div>
+
+    <div class="form-group">
+        <label for="category">Категория *</label>
+        <select id="category" name="category" class="form-control" required>
+            <option value="rights">Права ребенка</option>
+            <option value="education">Образование</option>
+            <option value="health">Здоровье</option>
+            <option value="safety">Безопасность</option>
+            <option value="other">Другое</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="content">Содержание обращения *</label>
+        <textarea id="content" name="content" class="form-control" rows="8" required></textarea>
+    </div>
+
+    {% if not current_user.is_authenticated %}
+    <div class="form-section">
+        <h3>Контактная информация</h3>
+        <div class="form-group">
+            <label for="contact_name">Ваше имя *</label>
+            <input type="text" id="contact_name" name="contact_name" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="contact_email">Email</label>
+            <input type="email" id="contact_email" name="contact_email" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="contact_phone">Телефон</label>
+            <input type="tel" id="contact_phone" name="contact_phone" class="form-control">
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Отправить обращение</button>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">Отмена</a>
+    </div>
+</form>
+{% endblock %}

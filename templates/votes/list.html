@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Голосования - {{ org_short_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Голосования</h1>
+</div>
+
+{% if votes.items %}
+    <div class="votes-grid">
+        {% for vote in votes.items %}
+        <div class="vote-card-full">
+            <div class="vote-header">
+                <span class="vote-status status-{{ vote.status }}">{{ vote.status }}</span>
+                {% if vote.is_anonymous %}
+                    <span class="badge badge-info">Анонимное</span>
+                {% endif %}
+            </div>
+            <h2><a href="{{ url_for('vote_detail', vote_id=vote.id) }}">{{ vote.title }}</a></h2>
+            {% if vote.description %}
+                <p>{{ vote.description[:150] }}{% if vote.description|length > 150 %}...{% endif %}</p>
+            {% endif %}
+            <div class="vote-meta">
+                <p><strong>Период:</strong> {{ vote.start_date.strftime('%d.%m.%Y') }} - {{ vote.end_date.strftime('%d.%m.%Y') }}</p>
+                <p><strong>Вариантов:</strong> {{ vote.options.count() }}</p>
+                <p><strong>Проголосовало:</strong> {{ vote.responses.count() }}</p>
+            </div>
+            {% if vote.status == 'active' %}
+                <a href="{{ url_for('vote_detail', vote_id=vote.id) }}" class="btn btn-primary">Голосовать</a>
+            {% else %}
+                <a href="{{ url_for('vote_detail', vote_id=vote.id) }}" class="btn btn-secondary">Просмотреть</a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if votes.pages > 1 %}
+    <div class="pagination">
+        {% if votes.has_prev %}
+            <a href="{{ url_for('votes_list', page=votes.prev_num) }}" class="btn btn-sm">&laquo; Назад</a>
+        {% endif %}
+        <span>Страница {{ votes.page }} из {{ votes.pages }}</span>
+        {% if votes.has_next %}
+            <a href="{{ url_for('votes_list', page=votes.next_num) }}" class="btn btn-sm">Вперед &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+{% else %}
+    <p class="empty-state">Голосований пока нет</p>
+{% endif %}
+{% endblock %}

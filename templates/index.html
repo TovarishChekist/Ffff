@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Главная - {{ org_short_name }}{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>Добро пожаловать!</h1>
+    <p class="hero-subtitle">{{ org_name }}</p>
+    <p>Система для эффективного управления деятельностью совета</p>
+    {% if not current_user.is_authenticated %}
+        <div class="hero-actions">
+            <a href="{{ url_for('register') }}" class="btn btn-large btn-primary">Присоединиться</a>
+            <a href="{{ url_for('login') }}" class="btn btn-large btn-secondary">Войти</a>
+        </div>
+    {% endif %}
+</div>
+
+<div class="dashboard-grid">
+    {% if latest_news %}
+    <section class="section">
+        <h2>Последние новости</h2>
+        <div class="news-list">
+            {% for news in latest_news %}
+            <article class="news-card">
+                {% if news.is_important %}
+                    <span class="badge badge-important">Важно</span>
+                {% endif %}
+                <h3><a href="{{ url_for('news_detail', news_id=news.id) }}">{{ news.title }}</a></h3>
+                {% if news.summary %}
+                    <p>{{ news.summary }}</p>
+                {% endif %}
+                <div class="news-meta">
+                    <span>{{ news.published_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                    <span>Просмотров: {{ news.views_count }}</span>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        <a href="{{ url_for('news_list') }}" class="btn btn-outline">Все новости</a>
+    </section>
+    {% endif %}
+
+    {% if upcoming_events %}
+    <section class="section">
+        <h2>Ближайшие мероприятия</h2>
+        <div class="events-list">
+            {% for event in upcoming_events %}
+            <div class="event-card">
+                <div class="event-date">
+                    <span class="day">{{ event.start_datetime.strftime('%d') }}</span>
+                    <span class="month">{{ event.start_datetime.strftime('%b') }}</span>
+                </div>
+                <div class="event-info">
+                    <h3><a href="{{ url_for('event_detail', event_id=event.id) }}">{{ event.title }}</a></h3>
+                    <p class="event-time">{{ event.start_datetime.strftime('%H:%M') }}</p>
+                    {% if event.location %}
+                        <p class="event-location">{{ event.location }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('events_list') }}" class="btn btn-outline">Все мероприятия</a>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    {% if active_votes %}
+    <section class="section">
+        <h2>Активные голосования</h2>
+        <div class="votes-list">
+            {% for vote in active_votes %}
+            <div class="vote-card">
+                <h3><a href="{{ url_for('vote_detail', vote_id=vote.id) }}">{{ vote.title }}</a></h3>
+                <p>Завершится: {{ vote.end_date.strftime('%d.%m.%Y %H:%M') }}</p>
+                <div class="vote-stats">
+                    <span>Вариантов: {{ vote.options.count() }}</span>
+                    <span>Проголосовало: {{ vote.responses.count() }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('votes_list') }}" class="btn btn-outline">Все голосования</a>
+        {% endif %}
+    </section>
+    {% endif %}
+</div>
+
+<section class="features">
+    <h2>Возможности системы</h2>
+    <div class="features-grid">
+        <div class="feature-card">
+            <h3>Мероприятия</h3>
+            <p>Планирование, организация и учет посещаемости мероприятий совета</p>
+        </div>
+        <div class="feature-card">
+            <h3>Голосования</h3>
+            <p>Электронные голосования и опросы членов совета</p>
+        </div>
+        <div class="feature-card">
+            <h3>Проекты</h3>
+            <p>Управление инициативами и проектами с отслеживанием прогресса</p>
+        </div>
+        <div class="feature-card">
+            <h3>Документы</h3>
+            <p>Централизованное хранение и обмен документами</p>
+        </div>
+        <div class="feature-card">
+            <h3>Обращения</h3>
+            <p>Прием и обработка обращений от детей и молодежи</p>
+        </div>
+        <div class="feature-card">
+            <h3>Отчетность</h3>
+            <p>Аналитика и отчеты о деятельности совета</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

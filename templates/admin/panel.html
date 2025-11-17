@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Административная панель - {{ org_short_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Административная панель</h1>
+</div>
+
+<div class="admin-stats">
+    <div class="stat-card">
+        <h3>{{ stats.users_count }}</h3>
+        <p>Пользователей</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ stats.events_count }}</h3>
+        <p>Мероприятий</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ stats.projects_count }}</h3>
+        <p>Проектов</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ stats.documents_count }}</h3>
+        <p>Документов</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ stats.appeals_count }}</h3>
+        <p>Обращений</p>
+    </div>
+</div>
+
+<div class="admin-sections">
+    <section class="admin-section">
+        <h2>Управление</h2>
+        <div class="admin-actions">
+            <a href="#" class="admin-action-card">
+                <h3>Пользователи</h3>
+                <p>Управление пользователями и правами доступа</p>
+            </a>
+            <a href="{{ url_for('event_create') }}" class="admin-action-card">
+                <h3>Мероприятия</h3>
+                <p>Создание и управление мероприятиями</p>
+            </a>
+            <a href="#" class="admin-action-card">
+                <h3>Голосования</h3>
+                <p>Создание и управление голосованиями</p>
+            </a>
+            <a href="#" class="admin-action-card">
+                <h3>Новости</h3>
+                <p>Публикация и модерация новостей</p>
+            </a>
+            <a href="{{ url_for('appeals_list') }}" class="admin-action-card">
+                <h3>Обращения</h3>
+                <p>Просмотр и обработка обращений</p>
+            </a>
+            <a href="#" class="admin-action-card">
+                <h3>Настройки</h3>
+                <p>Настройки системы</p>
+            </a>
+        </div>
+    </section>
+</div>
+{% endblock %}

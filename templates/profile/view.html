@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Профиль - {{ org_short_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Мой профиль</h1>
+    <a href="{{ url_for('profile_edit') }}" class="btn btn-primary">Редактировать</a>
+</div>
+
+<div class="profile-content">
+    <div class="profile-card">
+        <div class="profile-avatar">
+            {% if user.avatar %}
+                <img src="{{ url_for('static', filename='uploads/' + user.avatar) }}" alt="{{ user.full_name }}">
+            {% else %}
+                <div class="avatar-placeholder">{{ user.first_name[0] }}{{ user.last_name[0] }}</div>
+            {% endif %}
+        </div>
+
+        <div class="profile-info">
+            <h2>{{ user.full_name }}</h2>
+            <p class="profile-role">{{ user.role }}</p>
+
+            <dl class="profile-details">
+                <dt>Email:</dt>
+                <dd>{{ user.email }}</dd>
+
+                {% if user.phone %}
+                <dt>Телефон:</dt>
+                <dd>{{ user.phone }}</dd>
+                {% endif %}
+
+                {% if user.date_of_birth %}
+                <dt>Дата рождения:</dt>
+                <dd>{{ user.date_of_birth.strftime('%d.%m.%Y') }}</dd>
+                {% endif %}
+
+                <dt>Зарегистрирован:</dt>
+                <dd>{{ user.created_at.strftime('%d.%m.%Y') }}</dd>
+
+                {% if user.last_login %}
+                <dt>Последний вход:</dt>
+                <dd>{{ user.last_login.strftime('%d.%m.%Y %H:%M') }}</dd>
+                {% endif %}
+            </dl>
+
+            {% if user.bio %}
+            <div class="profile-bio">
+                <h3>О себе</h3>
+                <p>{{ user.bio }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

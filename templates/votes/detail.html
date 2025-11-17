@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}{{ vote.title }} - {{ org_short_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ vote.title }}</h1>
+    <span class="vote-status status-{{ vote.status }}">{{ vote.status }}</span>
+</div>
+
+<div class="content-layout">
+    <div class="main-content">
+        {% if vote.description %}
+        <section class="section">
+            <h2>Описание</h2>
+            <p>{{ vote.description }}</p>
+        </section>
+        {% endif %}
+
+        <section class="section">
+            <h2>Информация</h2>
+            <dl class="details-list">
+                <dt>Период голосования:</dt>
+                <dd>{{ vote.start_date.strftime('%d.%m.%Y %H:%M') }} - {{ vote.end_date.strftime('%d.%m.%Y %H:%M') }}</dd>
+
+                <dt>Тип голосования:</dt>
+                <dd>{{ vote.vote_type }}</dd>
+
+                <dt>Анонимное:</dt>
+                <dd>{{ 'Да' if vote.is_anonymous else 'Нет' }}</dd>
+
+                <dt>Проголосовало:</dt>
+                <dd>{{ vote.responses.count() }}</dd>
+            </dl>
+        </section>
+
+        {% if user_response %}
+            <section class="section">
+                <div class="alert alert-info">
+                    Вы уже проголосовали
+                </div>
+            </section>
+        {% elif vote.status == 'active' and vote.end_date > now %}
+            <section class="section">
+                <h2>Ваш голос</h2>
+                <form method="POST" action="{{ url_for('vote_submit', vote_id=vote.id) }}" class="vote-form">
+                    <div class="vote-options">
+                        {% for option in vote.options.order_by('order') %}
+                        <div class="vote-option">
+                            <label>
+                                <input type="radio" name="option_id" value="{{ option.id }}" required>
+                                <span>{{ option.text }}</span>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if vote.allow_comments %}
+                    <div class="form-group">
+                        <label for="comment">Комментарий (необязательно)</label>
+                        <textarea id="comment" name="comment" class="form-control" rows="3"></textarea>
+                    </div>
+                    {% endif %}
+
+                    <button type="submit" class="btn btn-primary">Проголосовать</button>
+                </form>
+            </section>
+        {% endif %}
+
+        {% if vote.status == 'completed' or (current_user.role in ['admin', 'chairman']) %}
+        <section class="section">
+            <h2>Результаты</h2>
+            <div class="vote-results">
+                {% for option in vote.options.order_by('order') %}
+                <div class="result-item">
+                    <div class="result-label">{{ option.text }}</div>
+                    <div class="result-bar">
+                        {% set total = vote.responses.count() %}
+                        {% set count = option.vote_count %}
+                        {% set percent = (count / total * 100) if total > 0 else 0 %}
+                        <div class="bar-fill" style="width: {{ percent }}%"></div>
+                    </div>
+                    <div class="result-stats">
+                        <span>{{ count }} голосов</span>
+                        <span>{{ "%.1f"|format(percent) }}%</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    </div>
+
+    <div class="sidebar">
+        <div class="actions-panel">
+            <h3>Действия</h3>
+            <a href="{{ url_for('votes_list') }}" class="btn btn-secondary btn-block">Назад к списку</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Новости - {{ org_short_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Новости</h1>
+</div>
+
+{% if news.items %}
+    <div class="news-grid">
+        {% for item in news.items %}
+        <article class="news-card-full">
+            {% if item.is_important %}
+                <span class="badge badge-important">Важно</span>
+            {% endif %}
+            {% if item.image %}
+                <div class="news-image">
+                    <img src="{{ url_for('static', filename='uploads/' + item.image) }}" alt="{{ item.title }}">
+                </div>
+            {% endif %}
+            <div class="news-content">
+                <h2><a href="{{ url_for('news_detail', news_id=item.id) }}">{{ item.title }}</a></h2>
+                {% if item.summary %}
+                    <p class="news-summary">{{ item.summary }}</p>
+                {% else %}
+                    <p class="news-summary">{{ item.content[:200] }}...</p>
+                {% endif %}
+                <div class="news-meta">
+                    <span>{{ item.published_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                    <span>Автор: {{ item.author.full_name }}</span>
+                    <span>Просмотров: {{ item.views_count }}</span>
+                </div>
+                <a href="{{ url_for('news_detail', news_id=item.id) }}" class="btn btn-sm btn-primary">Читать далее</a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+
+    {% if news.pages > 1 %}
+    <div class="pagination">
+        {% if news.has_prev %}
+            <a href="{{ url_for('news_list', page=news.prev_num) }}" class="btn btn-sm">&laquo; Назад</a>
+        {% endif %}
+        <span>Страница {{ news.page }} из {{ news.pages }}</span>
+        {% if news.has_next %}
+            <a href="{{ url_for('news_list', page=news.next_num) }}" class="btn btn-sm">Вперед &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+{% else %}
+    <p class="empty-state">Новостей пока нет</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Мероприятия - {{ org_short_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Мероприятия</h1>
+    {% if current_user.role in ['admin', 'chairman', 'secretary'] %}
+        <a href="{{ url_for('event_create') }}" class="btn btn-primary">Создать мероприятие</a>
+    {% endif %}
+</div>
+
+{% if events.items %}
+    <div class="events-grid">
+        {% for event in events.items %}
+        <div class="event-card-full">
+            <div class="event-header">
+                <span class="event-type type-{{ event.event_type }}">{{ event.event_type }}</span>
+                <span class="event-status status-{{ event.status }}">{{ event.status }}</span>
+            </div>
+            <h2><a href="{{ url_for('event_detail', event_id=event.id) }}">{{ event.title }}</a></h2>
+            <div class="event-details">
+                <p><strong>Дата:</strong> {{ event.start_datetime.strftime('%d.%m.%Y %H:%M') }}</p>
+                {% if event.location %}
+                    <p><strong>Место:</strong> {{ event.location }}</p>
+                {% endif %}
+                {% if event.online_link %}
+                    <p><strong>Онлайн:</strong> <a href="{{ event.online_link }}" target="_blank">Ссылка</a></p>
+                {% endif %}
+            </div>
+            {% if event.description %}
+                <p class="event-description">{{ event.description[:200] }}{% if event.description|length > 200 %}...{% endif %}</p>
+            {% endif %}
+            <div class="event-footer">
+                <span>Участников: {{ event.participants|length }}</span>
+                <span>Организатор: {{ event.creator.full_name }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Пагинация -->
+    {% if events.pages > 1 %}
+    <div class="pagination">
+        {% if events.has_prev %}
+            <a href="{{ url_for('events_list', page=events.prev_num) }}" class="btn btn-sm">&laquo; Назад</a>
+        {% endif %}
+        <span>Страница {{ events.page }} из {{ events.pages }}</span>
+        {% if events.has_next %}
+            <a href="{{ url_for('events_list', page=events.next_num) }}" class="btn btn-sm">Вперед &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+{% else %}
+    <p class="empty-state">Мероприятий пока нет</p>
+{% endif %}
+{% endblock %}

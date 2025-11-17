@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Ошибка сервера - {{ org_short_name }}{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <h1 class="error-code">500</h1>
+    <h2>Внутренняя ошибка сервера</h2>
+    <p>Произошла ошибка при обработке вашего запроса. Мы уже работаем над её устранением.</p>
+    <a href="{{ url_for('index') }}" class="btn btn-primary">Вернуться на главную</a>
+</div>
+{% endblock %}

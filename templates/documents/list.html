@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Документы - {{ org_short_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Документы</h1>
+    <a href="{{ url_for('document_upload') }}" class="btn btn-primary">Загрузить документ</a>
+</div>
+
+{% if documents.items %}
+    <div class="documents-list">
+        {% for doc in documents.items %}
+        <div class="document-item">
+            <div class="document-icon">
+                <span class="file-type">{{ doc.filename.rsplit('.', 1)[1] if '.' in doc.filename else '?' }}</span>
+            </div>
+            <div class="document-info">
+                <h3>{{ doc.title }}</h3>
+                {% if doc.description %}
+                    <p>{{ doc.description }}</p>
+                {% endif %}
+                <div class="document-meta">
+                    <span>{{ doc.filename }}</span>
+                    <span>{{ "%.2f"|format(doc.file_size / 1024 / 1024) }} МБ</span>
+                    <span>Загрузил: {{ doc.uploader.full_name }}</span>
+                    <span>{{ doc.created_at.strftime('%d.%m.%Y') }}</span>
+                </div>
+            </div>
+            <div class="document-actions">
+                <a href="{{ url_for('static', filename='uploads/' + doc.filename) }}" class="btn btn-sm btn-primary" download>Скачать</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if documents.pages > 1 %}
+    <div class="pagination">
+        {% if documents.has_prev %}
+            <a href="{{ url_for('documents_list', page=documents.prev_num) }}" class="btn btn-sm">&laquo; Назад</a>
+        {% endif %}
+        <span>Страница {{ documents.page }} из {{ documents.pages }}</span>
+        {% if documents.has_next %}
+            <a href="{{ url_for('documents_list', page=documents.next_num) }}" class="btn btn-sm">Вперед &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+{% else %}
+    <p class="empty-state">Документов пока нет</p>
+{% endif %}
+{% endblock %}
