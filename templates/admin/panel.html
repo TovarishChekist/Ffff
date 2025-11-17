@@ -30,11 +30,23 @@
     </div>
 </div>
 
+<section class="section">
+    <h2>Статистика по отделам</h2>
+    <div class="admin-stats">
+        {% for dept_name, count in dept_stats.items() %}
+        <div class="stat-card">
+            <h3>{{ count }}</h3>
+            <p>{{ dept_name }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
 <div class="admin-sections">
     <section class="admin-section">
         <h2>Управление</h2>
         <div class="admin-actions">
-            <a href="#" class="admin-action-card">
+            <a href="{{ url_for('admin_users') }}" class="admin-action-card">
                 <h3>Пользователи</h3>
                 <p>Управление пользователями и правами доступа</p>
             </a>

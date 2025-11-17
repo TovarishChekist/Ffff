@@ -44,6 +44,10 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(50), nullable=False, default='member')
     # Роли: admin, chairman, secretary, member, observer
 
+    # Отдел в совете
+    department = db.Column(db.String(50))
+    # Отделы: secretariat (Секретариат), project_dept (Проектный отдел), press_service (Пресс-служба)
+
     # Дополнительная информация
     bio = db.Column(db.Text)
     avatar = db.Column(db.String(255))

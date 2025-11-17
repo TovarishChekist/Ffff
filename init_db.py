@@ -39,6 +39,7 @@ def init_database():
                     'last_name': 'Иванов',
                     'patronymic': 'Иванович',
                     'role': 'chairman',
+                    'department': 'secretariat',
                     'password': 'password123'
                 },
                 {
@@ -47,6 +48,7 @@ def init_database():
                     'last_name': 'Петров',
                     'patronymic': 'Петрович',
                     'role': 'secretary',
+                    'department': 'secretariat',
                     'password': 'password123'
                 },
                 {
@@ -55,6 +57,16 @@ def init_database():
                     'last_name': 'Сидорова',
                     'patronymic': 'Александровна',
                     'role': 'member',
+                    'department': 'press_service',
+                    'password': 'password123'
+                },
+                {
+                    'email': 'kozlov@example.com',
+                    'first_name': 'Дмитрий',
+                    'last_name': 'Козлов',
+                    'patronymic': 'Сергеевич',
+                    'role': 'member',
+                    'department': 'project_dept',
                     'password': 'password123'
                 }
             ]
@@ -68,6 +80,7 @@ def init_database():
                         last_name=user_data['last_name'],
                         patronymic=user_data['patronymic'],
                         role=user_data['role'],
+                        department=user_data.get('department'),
                         is_active=True,
                         email_confirmed=True
                     )

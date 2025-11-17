@@ -39,6 +39,13 @@ class Config:
     ORGANIZATION_NAME = 'Детский и Молодежный Общественный Совет при Уполномоченном по правам ребёнка в Амурской области'
     ORGANIZATION_SHORT_NAME = 'ДМОС'
 
+    # Отделы совета
+    DEPARTMENTS = {
+        'secretariat': 'Секретариат',
+        'project_dept': 'Проектный отдел',
+        'press_service': 'Пресс-служба'
+    }
+
 class DevelopmentConfig(Config):
     """Конфигурация для разработки"""
     DEBUG = True

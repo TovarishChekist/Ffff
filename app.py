@@ -33,6 +33,7 @@ def inject_globals():
     return {
         'org_name': app.config['ORGANIZATION_NAME'],
         'org_short_name': app.config['ORGANIZATION_SHORT_NAME'],
+        'departments': app.config['DEPARTMENTS'],
         'now': datetime.utcnow()
     }
 
@@ -151,6 +152,7 @@ def register():
         last_name = request.form.get('last_name')
         patronymic = request.form.get('patronymic')
         phone = request.form.get('phone')
+        department = request.form.get('department') or None
 
         # Проверка существования пользователя
         if User.query.filter_by(email=email).first():
@@ -164,6 +166,7 @@ def register():
             last_name=last_name,
             patronymic=patronymic,
             phone=phone,
+            department=department,
             role='member'
         )
         user.set_password(password)
@@ -475,6 +478,7 @@ def profile_edit():
         current_user.last_name = request.form.get('last_name')
         current_user.patronymic = request.form.get('patronymic')
         current_user.phone = request.form.get('phone')
+        current_user.department = request.form.get('department') or None
         current_user.bio = request.form.get('bio')
 
         db.session.commit()
@@ -504,7 +508,36 @@ def admin_panel():
         'appeals_count': Appeal.query.count()
     }
 
-    return render_template('admin/panel.html', stats=stats)
+    # Статистика по отделам
+    dept_stats = {}
+    for dept_key, dept_name in app.config['DEPARTMENTS'].items():
+        dept_stats[dept_name] = User.query.filter_by(department=dept_key).count()
+
+    return render_template('admin/panel.html', stats=stats, dept_stats=dept_stats)
+
+
+@app.route('/admin/users')
+@login_required
+def admin_users():
+    """Список пользователей для администратора"""
+    if current_user.role != 'admin':
+        flash('У вас нет доступа к этой странице', 'danger')
+        return redirect(url_for('dashboard'))
+
+    page = request.args.get('page', 1, type=int)
+    department_filter = request.args.get('department')
+
+    # Базовый запрос
+    query = User.query
+
+    # Фильтрация по отделу
+    if department_filter:
+        query = query.filter_by(department=department_filter)
+
+    users = query.order_by(User.created_at.desc())\
+        .paginate(page=page, per_page=app.config['ITEMS_PER_PAGE'], error_out=False)
+
+    return render_template('admin/users.html', users=users, department_filter=department_filter)
 
 
 # ============================================================================

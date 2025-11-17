@@ -21,6 +21,9 @@
         <div class="profile-info">
             <h2>{{ user.full_name }}</h2>
             <p class="profile-role">{{ user.role }}</p>
+            {% if user.department %}
+                <p class="profile-department">{{ departments[user.department] }}</p>
+            {% endif %}
 
             <dl class="profile-details">
                 <dt>Email:</dt>
