@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Редактировать мероприятие - {{ org_short_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Редактировать мероприятие</h1>
+</div>
+
+<form method="POST" action="{{ url_for('admin_event_edit', event_id=event.id) }}" class="form-standard">
+    <div class="form-group">
+        <label for="title">Название *</label>
+        <input type="text" id="title" name="title" class="form-control" value="{{ event.title }}" required>
+    </div>
+
+    <div class="form-group">
+        <label for="description">Описание</label>
+        <textarea id="description" name="description" class="form-control" rows="5">{{ event.description or '' }}</textarea>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label for="start_datetime">Начало *</label>
+            <input type="datetime-local" id="start_datetime" name="start_datetime" class="form-control"
+                   value="{{ event.start_datetime.strftime('%Y-%m-%dT%H:%M') }}" required>
+        </div>
+        <div class="form-group">
+            <label for="end_datetime">Окончание</label>
+            <input type="datetime-local" id="end_datetime" name="end_datetime" class="form-control"
+                   value="{{ event.end_datetime.strftime('%Y-%m-%dT%H:%M') if event.end_datetime else '' }}">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="event_type">Тип мероприятия *</label>
+        <select id="event_type" name="event_type" class="form-control" required>
+            <option value="meeting" {% if event.event_type == 'meeting' %}selected{% endif %}>Заседание</option>
+            <option value="conference" {% if event.event_type == 'conference' %}selected{% endif %}>Конференция</option>
+            <option value="training" {% if event.event_type == 'training' %}selected{% endif %}>Тренинг</option>
+            <option value="social" {% if event.event_type == 'social' %}selected{% endif %}>Общественное мероприятие</option>
+            <option value="other" {% if event.event_type == 'other' %}selected{% endif %}>Другое</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="status">Статус</label>
+        <select id="status" name="status" class="form-control">
+            <option value="planned" {% if event.status == 'planned' %}selected{% endif %}>Запланировано</option>
+            <option value="in_progress" {% if event.status == 'in_progress' %}selected{% endif %}>В процессе</option>
+            <option value="completed" {% if event.status == 'completed' %}selected{% endif %}>Завершено</option>
+            <option value="cancelled" {% if event.status == 'cancelled' %}selected{% endif %}>Отменено</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="location">Место проведения</label>
+        <input type="text" id="location" name="location" class="form-control"
+               value="{{ event.location or '' }}" placeholder="Адрес или название места">
+    </div>
+
+    <div class="form-group">
+        <label for="online_link">Ссылка на онлайн-трансляцию</label>
+        <input type="url" id="online_link" name="online_link" class="form-control"
+               value="{{ event.online_link or '' }}" placeholder="https://...">
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-secondary">Отмена</a>
+    </div>
+</form>
+{% endblock %}

@@ -1,5 +1,5 @@
 """
-Главное приложение Flask для системы управления ДМОС
+Главное приложение Flask для системы управления ДиМОС
 """
 import os
 from datetime import datetime
@@ -538,6 +538,233 @@ def admin_users():
         .paginate(page=page, per_page=app.config['ITEMS_PER_PAGE'], error_out=False)
 
     return render_template('admin/users.html', users=users, department_filter=department_filter)
+
+
+# ============================================================================
+# АДМИНИСТРАТИВНОЕ РЕДАКТИРОВАНИЕ
+# ============================================================================
+
+@app.route('/admin/events/<int:event_id>/edit', methods=['GET', 'POST'])
+@login_required
+def admin_event_edit(event_id):
+    """Редактирование мероприятия (только админ)"""
+    if current_user.role != 'admin':
+        flash('У вас нет прав для редактирования мероприятий', 'danger')
+        return redirect(url_for('events_list'))
+
+    event = Event.query.get_or_404(event_id)
+
+    if request.method == 'POST':
+        event.title = request.form.get('title')
+        event.description = request.form.get('description')
+        event.start_datetime = datetime.fromisoformat(request.form.get('start_datetime'))
+        event.end_datetime = datetime.fromisoformat(request.form.get('end_datetime')) if request.form.get('end_datetime') else None
+        event.location = request.form.get('location')
+        event.online_link = request.form.get('online_link')
+        event.event_type = request.form.get('event_type')
+        event.status = request.form.get('status', 'planned')
+
+        db.session.commit()
+        flash('Мероприятие успешно обновлено', 'success')
+        return redirect(url_for('event_detail', event_id=event.id))
+
+    return render_template('admin/event_edit.html', event=event)
+
+
+@app.route('/admin/events/<int:event_id>/delete', methods=['POST'])
+@login_required
+def admin_event_delete(event_id):
+    """Удаление мероприятия (только админ)"""
+    if current_user.role != 'admin':
+        flash('У вас нет прав для удаления мероприятий', 'danger')
+        return redirect(url_for('events_list'))
+
+    event = Event.query.get_or_404(event_id)
+    db.session.delete(event)
+    db.session.commit()
+
+    flash('Мероприятие успешно удалено', 'success')
+    return redirect(url_for('events_list'))
+
+
+@app.route('/admin/votes/<int:vote_id>/edit', methods=['GET', 'POST'])
+@login_required
+def admin_vote_edit(vote_id):
+    """Редактирование голосования (только админ)"""
+    if current_user.role != 'admin':
+        flash('У вас нет прав для редактирования голосований', 'danger')
+        return redirect(url_for('votes_list'))
+
+    vote = Vote.query.get_or_404(vote_id)
+
+    if request.method == 'POST':
+        vote.title = request.form.get('title')
+        vote.description = request.form.get('description')
+        vote.start_datetime = datetime.fromisoformat(request.form.get('start_datetime'))
+        vote.end_datetime = datetime.fromisoformat(request.form.get('end_datetime'))
+        vote.status = request.form.get('status', 'active')
+        vote.is_anonymous = request.form.get('is_anonymous') == 'on'
+        vote.is_public = request.form.get('is_public') == 'on'
+
+        db.session.commit()
+        flash('Голосование успешно обновлено', 'success')
+        return redirect(url_for('vote_detail', vote_id=vote.id))
+
+    return render_template('admin/vote_edit.html', vote=vote)
+
+
+@app.route('/admin/votes/<int:vote_id>/delete', methods=['POST'])
+@login_required
+def admin_vote_delete(vote_id):
+    """Удаление голосования (только админ)"""
+    if current_user.role != 'admin':
+        flash('У вас нет прав для удаления голосований', 'danger')
+        return redirect(url_for('votes_list'))
+
+    vote = Vote.query.get_or_404(vote_id)
+
+    # Удаляем связанные ответы и опции
+    VoteResponse.query.filter_by(vote_id=vote_id).delete()
+    VoteOption.query.filter_by(vote_id=vote_id).delete()
+
+    db.session.delete(vote)
+    db.session.commit()
+
+    flash('Голосование успешно удалено', 'success')
+    return redirect(url_for('votes_list'))
+
+
+@app.route('/admin/news/<int:news_id>/edit', methods=['GET', 'POST'])
+@login_required
+def admin_news_edit(news_id):
+    """Редактирование новости (только админ)"""
+    if current_user.role != 'admin':
+        flash('У вас нет прав для редактирования новостей', 'danger')
+        return redirect(url_for('news_list'))
+
+    news = News.query.get_or_404(news_id)
+
+    if request.method == 'POST':
+        news.title = request.form.get('title')
+        news.summary = request.form.get('summary')
+        news.content = request.form.get('content')
+        news.is_important = request.form.get('is_important') == 'on'
+
+        db.session.commit()
+        flash('Новость успешно обновлена', 'success')
+        return redirect(url_for('news_detail', news_id=news.id))
+
+    return render_template('admin/news_edit.html', news=news)
+
+
+@app.route('/admin/news/<int:news_id>/delete', methods=['POST'])
+@login_required
+def admin_news_delete(news_id):
+    """Удаление новости (только админ)"""
+    if current_user.role != 'admin':
+        flash('У вас нет прав для удаления новостей', 'danger')
+        return redirect(url_for('news_list'))
+
+    news = News.query.get_or_404(news_id)
+    db.session.delete(news)
+    db.session.commit()
+
+    flash('Новость успешно удалена', 'success')
+    return redirect(url_for('news_list'))
+
+
+@app.route('/admin/projects/<int:project_id>/edit', methods=['GET', 'POST'])
+@login_required
+def admin_project_edit(project_id):
+    """Редактирование проекта (только админ)"""
+    if current_user.role != 'admin':
+        flash('У вас нет прав для редактирования проектов', 'danger')
+        return redirect(url_for('projects_list'))
+
+    project = Project.query.get_or_404(project_id)
+
+    if request.method == 'POST':
+        project.title = request.form.get('title')
+        project.description = request.form.get('description')
+        project.status = request.form.get('status', 'planning')
+        project.start_date = datetime.fromisoformat(request.form.get('start_date')).date() if request.form.get('start_date') else None
+        project.end_date = datetime.fromisoformat(request.form.get('end_date')).date() if request.form.get('end_date') else None
+
+        db.session.commit()
+        flash('Проект успешно обновлен', 'success')
+        return redirect(url_for('project_detail', project_id=project.id))
+
+    return render_template('admin/project_edit.html', project=project)
+
+
+@app.route('/admin/projects/<int:project_id>/delete', methods=['POST'])
+@login_required
+def admin_project_delete(project_id):
+    """Удаление проекта (только админ)"""
+    if current_user.role != 'admin':
+        flash('У вас нет прав для удаления проектов', 'danger')
+        return redirect(url_for('projects_list'))
+
+    project = Project.query.get_or_404(project_id)
+
+    # Удаляем связанные задачи
+    Task.query.filter_by(project_id=project_id).delete()
+
+    db.session.delete(project)
+    db.session.commit()
+
+    flash('Проект успешно удален', 'success')
+    return redirect(url_for('projects_list'))
+
+
+@app.route('/admin/users/<int:user_id>/edit', methods=['GET', 'POST'])
+@login_required
+def admin_user_edit(user_id):
+    """Редактирование пользователя (только админ)"""
+    if current_user.role != 'admin':
+        flash('У вас нет прав для редактирования пользователей', 'danger')
+        return redirect(url_for('dashboard'))
+
+    user = User.query.get_or_404(user_id)
+
+    if request.method == 'POST':
+        user.email = request.form.get('email')
+        user.first_name = request.form.get('first_name')
+        user.last_name = request.form.get('last_name')
+        user.patronymic = request.form.get('patronymic')
+        user.role = request.form.get('role')
+        user.department = request.form.get('department')
+        user.is_active = request.form.get('is_active') == 'on'
+
+        # Если задан новый пароль
+        if request.form.get('new_password'):
+            user.set_password(request.form.get('new_password'))
+
+        db.session.commit()
+        flash('Пользователь успешно обновлен', 'success')
+        return redirect(url_for('admin_users'))
+
+    return render_template('admin/user_edit.html', user=user)
+
+
+@app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
+@login_required
+def admin_user_delete(user_id):
+    """Удаление пользователя (только админ)"""
+    if current_user.role != 'admin':
+        flash('У вас нет прав для удаления пользователей', 'danger')
+        return redirect(url_for('dashboard'))
+
+    if user_id == current_user.id:
+        flash('Вы не можете удалить свой собственный аккаунт', 'danger')
+        return redirect(url_for('admin_users'))
+
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+
+    flash('Пользователь успешно удален', 'success')
+    return redirect(url_for('admin_users'))
 
 
 # ============================================================================

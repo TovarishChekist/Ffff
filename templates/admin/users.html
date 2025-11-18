@@ -65,7 +65,14 @@
                     </td>
                     <td>{{ user.created_at.strftime('%d.%m.%Y') }}</td>
                     <td>
-                        <a href="#" class="btn btn-sm btn-primary">Редактировать</a>
+                        <a href="{{ url_for('admin_user_edit', user_id=user.id) }}" class="btn btn-sm btn-primary">Редактировать</a>
+                        {% if user.id != current_user.id %}
+                        <form method="POST" action="{{ url_for('admin_user_delete', user_id=user.id) }}"
+                              style="display: inline;"
+                              onsubmit="return confirm('Вы уверены, что хотите удалить пользователя {{ user.full_name }}?');">
+                            <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                        </form>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}

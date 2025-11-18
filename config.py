@@ -37,7 +37,7 @@ class Config:
 
     # Организация
     ORGANIZATION_NAME = 'Детский и Молодежный Общественный Совет при Уполномоченном по правам ребёнка в Амурской области'
-    ORGANIZATION_SHORT_NAME = 'ДМОС'
+    ORGANIZATION_SHORT_NAME = 'ДиМОС'
 
     # Отделы совета
     DEPARTMENTS = {

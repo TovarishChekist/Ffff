@@ -28,6 +28,17 @@
 
     <div class="article-footer">
         <a href="{{ url_for('news_list') }}" class="btn btn-secondary">Назад к новостям</a>
+
+        {% if current_user.role == 'admin' %}
+        <div class="actions-panel" style="margin-top: 20px;">
+            <h3>Администрирование</h3>
+            <a href="{{ url_for('admin_news_edit', news_id=news.id) }}" class="btn btn-primary btn-block">Редактировать</a>
+            <form method="POST" action="{{ url_for('admin_news_delete', news_id=news.id) }}"
+                  onsubmit="return confirm('Вы уверены, что хотите удалить эту новость?');">
+                <button type="submit" class="btn btn-danger btn-block">Удалить</button>
+            </form>
+        </div>
+        {% endif %}
     </div>
 </article>
 
