@@ -85,9 +85,9 @@ def dashboard():
     ).order_by(Event.start_datetime).limit(5).all()
 
     # Задачи пользователя
-    user_tasks = Task.query.filter_by(
-        assignee_id=current_user.id,
-        status__in=['todo', 'in_progress']
+    user_tasks = Task.query.filter(
+        Task.assignee_id == current_user.id,
+        Task.status.in_(['todo', 'in_progress'])
     ).order_by(Task.due_date).limit(10).all()
 
     return render_template('dashboard.html',
