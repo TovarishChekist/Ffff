@@ -12,31 +12,38 @@
         <div class="container">
             <div class="navbar-brand">
                 <a href="{{ url_for('index') }}" class="navbar-logo">{{ org_short_name }}</a>
+                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Открыть меню">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
             </div>
-            <ul class="navbar-menu">
-                <li><a href="{{ url_for('index') }}">Главная</a></li>
-                {% if current_user.is_authenticated %}
-                    <li><a href="{{ url_for('dashboard') }}">Личный кабинет</a></li>
-                    <li><a href="{{ url_for('events_list') }}">Мероприятия</a></li>
-                    <li><a href="{{ url_for('votes_list') }}">Голосования</a></li>
-                    <li><a href="{{ url_for('projects_list') }}">Проекты</a></li>
-                    <li><a href="{{ url_for('documents_list') }}">Документы</a></li>
-                {% endif %}
-                <li><a href="{{ url_for('news_list') }}">Новости</a></li>
-                <li><a href="{{ url_for('appeal_create') }}">Обращения</a></li>
-            </ul>
-            <div class="navbar-user">
-                {% if current_user.is_authenticated %}
-                    <span class="user-name">{{ current_user.full_name }}</span>
-                    <a href="{{ url_for('profile') }}" class="btn btn-sm btn-secondary">Профиль</a>
-                    {% if current_user.role == 'admin' %}
-                        <a href="{{ url_for('admin_panel') }}" class="btn btn-sm btn-warning">Админ</a>
+            <div class="navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-menu">
+                    <li><a href="{{ url_for('index') }}">Главная</a></li>
+                    {% if current_user.is_authenticated %}
+                        <li><a href="{{ url_for('dashboard') }}">Личный кабинет</a></li>
+                        <li><a href="{{ url_for('events_list') }}">Мероприятия</a></li>
+                        <li><a href="{{ url_for('votes_list') }}">Голосования</a></li>
+                        <li><a href="{{ url_for('projects_list') }}">Проекты</a></li>
+                        <li><a href="{{ url_for('documents_list') }}">Документы</a></li>
                     {% endif %}
-                    <a href="{{ url_for('logout') }}" class="btn btn-sm btn-danger">Выход</a>
-                {% else %}
-                    <a href="{{ url_for('login') }}" class="btn btn-sm btn-primary">Вход</a>
-                    <a href="{{ url_for('register') }}" class="btn btn-sm btn-success">Регистрация</a>
-                {% endif %}
+                    <li><a href="{{ url_for('news_list') }}">Новости</a></li>
+                    <li><a href="{{ url_for('appeal_create') }}">Обращения</a></li>
+                </ul>
+                <div class="navbar-user">
+                    {% if current_user.is_authenticated %}
+                        <span class="user-name">{{ current_user.full_name }}</span>
+                        <a href="{{ url_for('profile') }}" class="btn btn-sm btn-secondary">Профиль</a>
+                        {% if current_user.role == 'admin' %}
+                            <a href="{{ url_for('admin_panel') }}" class="btn btn-sm btn-warning">Админ</a>
+                        {% endif %}
+                        <a href="{{ url_for('logout') }}" class="btn btn-sm btn-danger">Выход</a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="btn btn-sm btn-primary">Вход</a>
+                        <a href="{{ url_for('register') }}" class="btn btn-sm btn-success">Регистрация</a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </nav>

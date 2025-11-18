@@ -1160,24 +1160,184 @@ body {
     font-weight: 500;
 }
 
-/* Адаптивность */
-@media (max-width: 768px) {
+/* ============================================================================
+   МОБИЛЬНОЕ МЕНЮ
+   ============================================================================ */
+
+/* Гамбургер кнопка */
+.mobile-menu-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 30px;
+    height: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 1001;
+}
+
+.mobile-menu-toggle span {
+    display: block;
+    width: 100%;
+    height: 3px;
+    background: var(--gradient-primary);
+    border-radius: 2px;
+    transition: all var(--transition-base);
+}
+
+.mobile-menu-toggle.active span:nth-child(1) {
+    transform: rotate(45deg) translateY(10px);
+}
+
+.mobile-menu-toggle.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.mobile-menu-toggle.active span:nth-child(3) {
+    transform: rotate(-45deg) translateY(-10px);
+}
+
+/* Navbar collapse */
+.navbar-collapse {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1;
+    gap: 2rem;
+}
+
+/* Предотвращение прокрутки при открытом меню */
+body.menu-open {
+    overflow: hidden;
+}
+
+/* ============================================================================
+   АДАПТИВНОСТЬ ДЛЯ ПЛАНШЕТОВ И МЕНЬШЕ
+   ============================================================================ */
+
+@media (max-width: 992px) {
     .navbar .container {
+        flex-wrap: wrap;
+    }
+
+    .navbar-brand {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    .mobile-menu-toggle {
+        display: flex;
+    }
+
+    .navbar-collapse {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 80%;
+        max-width: 320px;
+        height: 100vh;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        box-shadow: var(--shadow-2xl);
         flex-direction: column;
-        gap: 1rem;
+        align-items: stretch;
+        justify-content: flex-start;
+        padding: 5rem 2rem 2rem;
+        transition: left 0.3s ease;
+        z-index: 1000;
+        overflow-y: auto;
+    }
+
+    .navbar-collapse.active {
+        left: 0;
     }
 
     .navbar-menu {
         flex-direction: column;
         width: 100%;
-        text-align: center;
-        gap: 0.75rem;
+        text-align: left;
+        gap: 0;
+    }
+
+    .navbar-menu li {
+        width: 100%;
+    }
+
+    .navbar-menu li a {
+        display: block;
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 1.125rem;
     }
 
     .navbar-menu li a::after {
         display: none;
     }
 
+    .navbar-user {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+        border-top: 2px solid var(--border-color);
+        padding-top: 1.5rem;
+    }
+
+    .navbar-user .btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .navbar-user .user-name {
+        display: block;
+        padding: 0.75rem;
+        background: var(--light-bg);
+        border-radius: var(--radius-md);
+        text-align: center;
+        font-weight: 600;
+    }
+
+    /* Overlay */
+    .navbar-collapse.active::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 320px;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: -1;
+    }
+}
+
+/* ============================================================================
+   АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    /* Touch-friendly размеры */
+    .btn {
+        min-height: 44px;
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+    }
+
+    .btn-sm {
+        min-height: 40px;
+        padding: 0.625rem 1rem;
+        font-size: 0.9375rem;
+    }
+
+    .form-control {
+        min-height: 48px;
+        font-size: 16px; /* Предотвращает зум на iOS */
+    }
+
+    /* Сетки */
     .content-layout {
         grid-template-columns: 1fr;
     }
@@ -1188,10 +1348,16 @@ body {
 
     .dashboard-stats {
         grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
     }
 
     .form-row {
         grid-template-columns: 1fr;
+    }
+
+    /* Герой-секция */
+    .hero {
+        padding: 3rem 1.5rem;
     }
 
     .hero h1 {
@@ -1202,6 +1368,12 @@ body {
         font-size: 1.125rem;
     }
 
+    .hero-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    /* Заголовки страниц */
     .page-header {
         flex-direction: column;
         align-items: flex-start;
@@ -1212,18 +1384,38 @@ body {
         font-size: 1.75rem;
     }
 
+    /* Формы */
     .auth-box {
-        padding: 2rem;
+        padding: 2rem 1.5rem;
     }
 
+    .auth-box h1 {
+        font-size: 1.75rem;
+    }
+
+    /* Контейнер */
     .container {
         padding: 0 1rem;
+    }
+
+    .main-content {
+        padding: 1.5rem 0;
+    }
+
+    /* Карточки */
+    .stat-card {
+        padding: 1.5rem;
     }
 
     .stat-card h3 {
         font-size: 2.5rem;
     }
 
+    .section {
+        padding: 1.5rem;
+    }
+
+    /* Сетки функций */
     .features-grid {
         grid-template-columns: 1fr;
     }
@@ -1231,16 +1423,103 @@ body {
     .admin-actions {
         grid-template-columns: 1fr;
     }
+
+    /* Таблицы - адаптивный дизайн */
+    .data-table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .data-table thead {
+        display: none;
+    }
+
+    .data-table tbody {
+        display: block;
+    }
+
+    .data-table tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+    }
+
+    .data-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.875rem 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .data-table td:last-child {
+        border-bottom: none;
+    }
+
+    .data-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        margin-right: 1rem;
+        color: var(--text-secondary);
+    }
+
+    /* Действия в таблице */
+    .data-table td:last-child {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .data-table td:last-child .btn,
+    .data-table td:last-child form {
+        width: 100%;
+    }
+
+    /* Футер */
+    .footer {
+        padding: 2rem 0;
+        font-size: 0.875rem;
+    }
+
+    /* Панели действий */
+    .actions-panel {
+        padding: 1.25rem;
+    }
+
+    .sidebar .actions-panel {
+        margin-bottom: 1rem;
+    }
+
+    /* Алерты */
+    .alert {
+        padding: 1rem;
+        font-size: 0.9375rem;
+    }
+
+    /* Задачи и события */
+    .task-item,
+    .event-card {
+        padding: 1rem;
+    }
 }
 
+/* ============================================================================
+   АДАПТИВНОСТЬ ДЛЯ МАЛЕНЬКИХ ТЕЛЕФОНОВ
+   ============================================================================ */
+
 @media (max-width: 480px) {
+    /* Одноколоночные сетки */
     .dashboard-stats {
         grid-template-columns: 1fr;
     }
 
+    /* Карточки событий */
     .event-card {
         flex-direction: column;
         text-align: center;
+        gap: 1rem;
     }
 
     .event-date {
@@ -1248,16 +1527,89 @@ body {
         padding: 0.75rem;
     }
 
+    /* Герой-секция */
     .hero {
-        padding: 2.5rem 1.5rem;
+        padding: 2rem 1rem;
     }
 
-    .hero-actions {
-        flex-direction: column;
+    .hero h1 {
+        font-size: 1.75rem;
     }
 
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+
+    /* Заголовки */
+    .page-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .section h2 {
+        font-size: 1.375rem;
+    }
+
+    /* Кнопки */
     .btn {
         width: 100%;
+    }
+
+    .btn-sm {
+        font-size: 0.875rem;
+    }
+
+    /* Статистика */
+    .stat-card h3 {
+        font-size: 2rem;
+    }
+
+    .stat-card p {
+        font-size: 0.875rem;
+    }
+
+    /* Формы */
+    .auth-box {
+        padding: 1.5rem 1rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    /* Мобильное меню шире */
+    .navbar-collapse {
+        width: 90%;
+        max-width: 100%;
+    }
+
+    /* Адаптация деталей */
+    .details-list {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .details-list dt {
+        font-weight: 700;
+        margin-top: 0.75rem;
+    }
+
+    .details-list dd {
+        margin-left: 0;
+    }
+
+    /* Прогресс-бары */
+    .progress-bar {
+        height: 24px;
+    }
+
+    .progress-text {
+        font-size: 0.8125rem;
+    }
+
+    /* Бейджи */
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.625rem;
     }
 }
 
