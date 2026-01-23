@@ -181,6 +181,11 @@ cat QUICKSTART.md
 cat DEPLOYMENT_PYTHONANYWHERE.md
 ```
 
+**Тестирование на Google Colab:**
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/TovarishChekist/Ffff/blob/claude/rewrite-telegram-bot-EEBhi/Telegram_Bot_Colab.ipynb)
+
+⚠️ Только для тестирования! (макс. 12 часов) | [Инструкция](DEPLOYMENT_COLAB.md)
+
 ### Управление ботом
 
 **Локально:**
