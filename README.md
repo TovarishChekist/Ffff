@@ -214,7 +214,9 @@ cat DEPLOYMENT_PYTHONANYWHERE.md
 ### Документация
 - [README по боту](telegram_bot/README.md) - подробное описание архитектуры
 - [QUICKSTART](QUICKSTART.md) - развертывание за 5 минут
+- [SIMPLE_PYTHONANYWHERE](SIMPLE_PYTHONANYWHERE.md) - **для новичков!** Простая инструкция за 10 минут
 - [DEPLOYMENT_PYTHONANYWHERE](DEPLOYMENT_PYTHONANYWHERE.md) - полная инструкция по PythonAnywhere
+- [DEPLOYMENT_COLAB](DEPLOYMENT_COLAB.md) - запуск на Google Colab (только тестирование)
 - [CHANGELOG](CHANGELOG_BOT.md) - история изменений
 
 ### Архитектура бота
