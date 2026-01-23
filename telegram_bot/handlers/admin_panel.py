@@ -254,10 +254,17 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
 
 <b>Отправьте новый текст сообщения.</b>
 
-<i>Поддерживается HTML-разметка:
-• &lt;b&gt;текст&lt;/b&gt; - жирный
-• &lt;i&gt;текст&lt;/i&gt; - курсив
-• &lt;code&gt;текст&lt;/code&gt; - код
+<i>Способы форматирования:
+
+1️⃣ <b>Используйте встроенное форматирование Telegram:</b>
+   • Выделите текст → выберите жирный/курсив/ссылку
+   • Бот автоматически сохранит форматирование!
+
+2️⃣ <b>Или используйте HTML-теги:</b>
+   • &lt;b&gt;жирный&lt;/b&gt;
+   • &lt;i&gt;курсив&lt;/i&gt;
+   • &lt;code&gt;код&lt;/code&gt;
+   • &lt;a href="URL"&gt;ссылка&lt;/a&gt;
 
 Для отмены отправьте /cancel</i>"""
 
@@ -391,8 +398,9 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
         title = data['title']
         old_message_id = data.get('old_message_id')
 
-        # Сохраняем новый текст
-        new_text = message.text
+        # Получаем текст с HTML-форматированием
+        # html_text сохраняет форматирование (жирный, курсив, ссылки) из Telegram
+        new_text = message.html_text if message.html_text else message.text
         if message_manager.set(key, new_text):
             # Удаляем старое сообщение с инструкцией
             if old_message_id:
