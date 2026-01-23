@@ -31,6 +31,29 @@ class BotConfig:
     # Уровень логирования
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
 
+    # Список ID администраторов (через запятую)
+    ADMIN_IDS: list = []
+
+    @classmethod
+    def load_admin_ids(cls) -> None:
+        """Загружает список ID администраторов из переменной окружения"""
+        admin_ids_str = os.getenv("ADMIN_IDS", "")
+        if admin_ids_str:
+            cls.ADMIN_IDS = [int(id.strip()) for id in admin_ids_str.split(",") if id.strip()]
+
+    @classmethod
+    def is_admin(cls, user_id: int) -> bool:
+        """
+        Проверяет, является ли пользователь администратором
+
+        Args:
+            user_id: Telegram ID пользователя
+
+        Returns:
+            bool: True если пользователь - администратор
+        """
+        return user_id in cls.ADMIN_IDS
+
     @classmethod
     def validate(cls) -> None:
         """

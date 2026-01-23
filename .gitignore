@@ -46,6 +46,9 @@ static/uploads/*
 # Logs
 *.log
 
+# Telegram bot custom messages
+custom_messages.json
+
 # OS
 .DS_Store
 Thumbs.db

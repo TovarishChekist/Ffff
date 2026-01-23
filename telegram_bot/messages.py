@@ -2,143 +2,78 @@
 """
 Тексты сообщений для Telegram-бота
 Детского и Молодёжного Общественного Совета
+
+Теперь тексты загружаются из MessageManager и могут быть отредактированы администраторами
 """
 
-# Приветственное сообщение
-WELCOME_MESSAGE = """<b>🌟 Добро пожаловать в официальный бот Детского и Молодёжного Общественного Совета при Уполномоченном по правам ребёнка в Амурской области! 🌟</b>
+from .message_manager import message_manager
 
-Ты попал в место, где твой голос имеет значение! 🗣️ Здесь ты можешь:
+# Функции-геттеры для получения текстов через MessageManager
+def get_welcome_message() -> str:
+    return message_manager.get('welcome_message')
 
-🔹 <b>Обратиться в Совет</b> — поделиться проблемой или предложением
-🔹 <b>Подать заявку на вступление</b> — стать частью команды активных ребят
-🔹 <b>Узнать больше о нашей работе</b> — познакомиться с целями и задачами Совета
-🔹 <b>Посмотреть состав руководства</b> — увидеть, кто управляет Советом
+def get_council_info() -> str:
+    return message_manager.get('council_info')
 
-Мы работаем для защиты прав детей и молодёжи в Амурской области. Присоединяйся к нам и делай мир лучше! 🚀
+def get_leadership_info() -> str:
+    return message_manager.get('leadership_info')
 
-<b>Выбери действие:</b> 👇"""
+def get_appeal_prompt() -> str:
+    return message_manager.get('appeal_prompt')
 
-# Информация о Совете
-COUNCIL_INFO = """🌟 <b>Привет, будущий лидер!</b> 🌟
+def get_appeal_sent() -> str:
+    return message_manager.get('appeal_sent')
 
-Мы — <b>Детский и Молодёжный Общественный Совет</b> при Уполномоченном по правам ребёнка в Амурской области! 🏛️✨
+def get_application_welcome() -> str:
+    return message_manager.get('application_welcome')
 
-Это твоя площадка для реальных изменений! 💪 Мы — команда активных ребят, которая помогает решать важные вопросы, касающиеся всех детей и подростков!
+def get_application_age_prompt() -> str:
+    return message_manager.get('application_age_prompt')
 
-🎯 <b>Наша миссия — сделать твой голос слышимым!</b>
+def get_application_school_prompt() -> str:
+    return message_manager.get('application_school_prompt')
 
-🔥 <b>Что мы делаем:</b>
+def get_application_class_prompt() -> str:
+    return message_manager.get('application_class_prompt')
 
-🌍 <b>Меняем мир вместе!</b> — Привлекаем детей и молодёжь к участию в общественной жизни, ведь именно ты можешь сделать наш регион лучше!
+def get_application_username_prompt() -> str:
+    return message_manager.get('application_username_prompt')
 
-📚 <b>Прокачиваем твои знания!</b> — Помогаем разобраться в правах человека и формируем активную гражданскую позицию. 💡
+def get_application_motivation_prompt() -> str:
+    return message_manager.get('application_motivation_prompt')
 
-💬 <b>Даем право голоса!</b> — Создаем возможности для каждого ребенка свободно выражать свои мысли по всем важным вопросам. Твое мнение важно! 🎤
+def get_application_experience_prompt() -> str:
+    return message_manager.get('application_experience_prompt')
 
-⚙️ <b>Влияем на решения!</b> — Разрабатываем реальные механизмы участия детей в принятии решений на всех уровнях власти! 🏢
+def get_application_contacts_prompt() -> str:
+    return message_manager.get('application_contacts_prompt')
 
-🚀 <b>Почему стоит к нам присоединиться? С нами ты:</b>
+def get_application_success() -> str:
+    return message_manager.get('application_success')
 
-✅ Развиваешь <b>лидерские качества</b>
-✅ Находишь <b>единомышленников</b>
-✅ Участвуешь в <b>реальных проектах</b>
-✅ Влияешь на <b>жизнь в регионе</b>
-✅ Получаешь <b>уникальный опыт</b>
+def get_back_to_menu() -> str:
+    return message_manager.get('back_to_menu')
 
-<b>Готов стать частью нашей команды?</b> 🔥"""
-
-# Информация о руководстве
-LEADERSHIP_INFO = """👥 <b>Руководство Совета:</b>
-
-📌 <b>Кадыханова Светлана</b> – Куратор Совета
-
-📌 <b>Гип Евгений</b> – Председатель Совета
-
-📌 <b>Герасименко Мария</b> – Заместитель председателя Совета
-
-📌 <b>Рыбаков Тарас</b> – Руководитель проектного отдела
-
-📌 <b>Хайлова Вероника</b> – Руководитель Пресс-службы
-
-📌 <b>Косянюк Илья</b> – Ответственный секретарь"""
-
-# Сообщение при выборе обращения
-APPEAL_PROMPT = """<b>📩 Обращение в Совет</b>
-
-💬 Ты выбрал раздел обращений — это отличный способ поделиться своими идеями, проблемами или предложениями! Мы всегда рады услышать твое мнение о правах детей, школьной жизни или молодежных проектах в Амурской области.
-
-<b>Твой голос важен — пиши смело!</b> ✍️"""
-
-# Сообщение при отправке обращения
-APPEAL_SENT = """✅ <b>Твое обращение было отправлено!</b>
-
-Мы рассмотрим его в ближайшее время и обязательно ответим."""
-
-# Приглашение к заявке
-APPLICATION_WELCOME = """<b>📋 Заявка на вступление в Совет</b>
-
-🌟 Отлично! Ты решил присоединиться к нашей команде!
-
-📍 <b>Важно:</b> Пока мы принимаем ребят только из города Благовещенска.
-
-Чтобы подать заявку, нужно заполнить небольшую анкету. Это поможет нам лучше тебя узнать и понять, как ты можешь участвовать в работе Совета.
-
-<b>Начнем! Укажи твое ФИО:</b> 📝"""
-
-# Промпты для заявки
-APPLICATION_AGE_PROMPT = """<b>Укажи свой возраст:</b> 🎂
-
-<i>Например: 15</i>"""
-
-APPLICATION_SCHOOL_PROMPT = """<b>Укажи школу обучения:</b> 🏫
-
-<i>Пример: МАОУ "Школа №26 г.Благовещенска"</i>"""
-
-APPLICATION_CLASS_PROMPT = """<b>Укажи класс обучения:</b> 📚
-
-<i>Например: 9А или 11Б</i>"""
-
-APPLICATION_USERNAME_PROMPT = """<b>Укажи свой никнейм в Telegram:</b> 📱
-
-<i>Начинается с @, его можно найти в настройках профиля.</i> <b>Без него мы не сможем обработать твою заявку!</b>
-
-<i>Пример: @ivanov_ivan</i>"""
-
-APPLICATION_MOTIVATION_PROMPT = """<b>Расскажи, почему ты хочешь вступить в Совет:</b> 💭
-
-<i>Опиши свою мотивацию, что тебя интересует в нашей работе, какие цели ты ставишь перед собой. Это поможет нам понять, насколько серьезны твои намерения.</i>
-
-<i>Пример: "Хочу защищать права детей в нашем регионе, участвовать в разработке молодежных проектов и развивать свои лидерские качества"</i>"""
-
-APPLICATION_EXPERIENCE_PROMPT = """<b>Расскажи о своем опыте общественной деятельности:</b> 🌟
-
-<b>Участвовал ли ты в школьном самоуправлении, волонтерской деятельности, общественных организациях? Если опыта пока нет — это не проблема, просто напиши "Опыта пока нет, но готов учиться"</b>
-
-<i>Пример: "Был старостой класса 2 года, участвовал в экологических акциях, помогаю в школьной библиотеке"</i>"""
-
-APPLICATION_CONTACTS_PROMPT = """<b>Укажи дополнительные контакты для связи:</b> 📞
-
-<b>Номер телефона, email или другие способы связи.</b>
-
-<i>Пример: "Телефон: +7-XXX-XXX-XX-XX (мама), email: ivanov@mail.ru"</i>"""
-
-# Сообщение об успешной отправке заявки
-APPLICATION_SUCCESS = """🎉 <b>Заявка успешно отправлена!</b>
-
-✅ Твоя заявка получена и будет рассмотрена в течение <b>5 рабочих дней</b>.
-
-📩 Результат рассмотрения придет в этот чат.
-
-💪 Спасибо за желание присоединиться к нашей команде! Мы ценим активную молодежь, которая хочет изменить мир к лучшему."""
-
-# Сообщение о возврате в меню
-BACK_TO_MENU = "<b>Ты вернулся в главное меню. 🔙</b>"
-
-# Сообщение с ответом от Совета
+# Статические сообщения (не редактируются)
 COUNCIL_RESPONSE = "<b>Пришёл ответ от Совета!</b> 📩\n\n{message}\n\n"
-
-# Подтверждение отправки ответа админу
 ADMIN_RESPONSE_SENT = "✅ Ответ отправлен пользователю."
+
+# Обратная совместимость - оставляем константы
+WELCOME_MESSAGE = get_welcome_message()
+COUNCIL_INFO = get_council_info()
+LEADERSHIP_INFO = get_leadership_info()
+APPEAL_PROMPT = get_appeal_prompt()
+APPEAL_SENT = get_appeal_sent()
+APPLICATION_WELCOME = get_application_welcome()
+APPLICATION_AGE_PROMPT = get_application_age_prompt()
+APPLICATION_SCHOOL_PROMPT = get_application_school_prompt()
+APPLICATION_CLASS_PROMPT = get_application_class_prompt()
+APPLICATION_USERNAME_PROMPT = get_application_username_prompt()
+APPLICATION_MOTIVATION_PROMPT = get_application_motivation_prompt()
+APPLICATION_EXPERIENCE_PROMPT = get_application_experience_prompt()
+APPLICATION_CONTACTS_PROMPT = get_application_contacts_prompt()
+APPLICATION_SUCCESS = get_application_success()
+BACK_TO_MENU = get_back_to_menu()
 
 
 def format_application(data: dict) -> str:

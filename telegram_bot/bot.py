@@ -15,7 +15,8 @@ from .handlers import (
     register_common_handlers,
     register_appeal_handlers,
     register_application_handlers,
-    register_admin_handlers
+    register_admin_handlers,
+    register_admin_panel_handlers
 )
 
 # Настройка логирования
@@ -60,6 +61,13 @@ def main():
         BotConfig.validate()
         logger.info("✓ Конфигурация валидна")
 
+        # Загрузка списка администраторов
+        BotConfig.load_admin_ids()
+        if BotConfig.ADMIN_IDS:
+            logger.info(f"✓ Загружено администраторов: {len(BotConfig.ADMIN_IDS)}")
+        else:
+            logger.warning("⚠ Администраторы не настроены. Админ-панель будет недоступна.")
+
         # Настройка API
         configure_api()
         logger.info("✓ API настроен")
@@ -73,6 +81,7 @@ def main():
         register_appeal_handlers(bot)
         register_application_handlers(bot)
         register_admin_handlers(bot)
+        register_admin_panel_handlers(bot)
         logger.info("✓ Обработчики зарегистрированы")
 
         # Проверка подключения

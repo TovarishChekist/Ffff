@@ -22,10 +22,13 @@ class UserState(str, Enum):
     APPLICATION_EXPERIENCE = "application_experience"
     APPLICATION_CONTACTS = "application_contacts"
 
+    # Админ-панель - редактирование сообщений
+    ADMIN_EDIT_MESSAGE = "admin_edit_message"
+
 
 # Словари для хранения состояний пользователей
 user_states = {}  # chat_id -> UserState
-user_data = {}    # chat_id -> dict с данными заявки
+user_data = {}    # chat_id -> dict с данными заявки / данными редактирования
 
 # Мапа для связи сообщений в групповых чатах с пользователями
 # (group_chat_id, group_message_id) -> user_chat_id

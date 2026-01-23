@@ -26,10 +26,10 @@ def send_menu(bot: TeleBot, chat_id: int, text: Optional[str] = None) -> Message
     Returns:
         Message: Отправленное сообщение
     """
-    from .messages import WELCOME_MESSAGE
+    from .messages import get_welcome_message
 
     if text is None:
-        text = WELCOME_MESSAGE
+        text = get_welcome_message()
 
     sent = bot.send_message(chat_id, text, reply_markup=main_menu(), parse_mode='HTML')
     last_bot_message[chat_id] = sent.message_id
