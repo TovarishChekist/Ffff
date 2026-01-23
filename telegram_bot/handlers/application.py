@@ -11,15 +11,15 @@ from ..states import user_states, user_data, UserState, responses_map
 from ..config import BotConfig
 from ..utils import delete_message_safe, delete_last_bot_message, send_and_track
 from ..messages import (
-    APPLICATION_WELCOME,
-    APPLICATION_AGE_PROMPT,
-    APPLICATION_SCHOOL_PROMPT,
-    APPLICATION_CLASS_PROMPT,
-    APPLICATION_USERNAME_PROMPT,
-    APPLICATION_MOTIVATION_PROMPT,
-    APPLICATION_EXPERIENCE_PROMPT,
-    APPLICATION_CONTACTS_PROMPT,
-    APPLICATION_SUCCESS,
+    get_application_welcome,
+    get_application_age_prompt,
+    get_application_school_prompt,
+    get_application_class_prompt,
+    get_application_username_prompt,
+    get_application_motivation_prompt,
+    get_application_experience_prompt,
+    get_application_contacts_prompt,
+    get_application_success,
     format_application
 )
 from ..keyboards import back_to_menu
@@ -48,7 +48,7 @@ def register_application_handlers(bot: TeleBot) -> None:
         delete_last_bot_message(bot, chat_id)
 
         # Отправляем приветствие и запрос ФИО
-        send_and_track(bot, chat_id, APPLICATION_WELCOME, reply_markup=back_to_menu())
+        send_and_track(bot, chat_id, get_application_welcome(), reply_markup=back_to_menu())
 
         # Устанавливаем состояние и инициализируем данные
         user_states[chat_id] = UserState.APPLICATION_FIO
@@ -64,7 +64,7 @@ def register_application_handlers(bot: TeleBot) -> None:
         delete_last_bot_message(bot, chat_id)
 
         # Запрашиваем возраст
-        send_and_track(bot, chat_id, APPLICATION_AGE_PROMPT, reply_markup=back_to_menu())
+        send_and_track(bot, chat_id, get_application_age_prompt(), reply_markup=back_to_menu())
         user_states[chat_id] = UserState.APPLICATION_AGE
 
         logger.debug(f"Пользователь {message.from_user.id} указал ФИО")
@@ -79,7 +79,7 @@ def register_application_handlers(bot: TeleBot) -> None:
         delete_last_bot_message(bot, chat_id)
 
         # Запрашиваем школу
-        send_and_track(bot, chat_id, APPLICATION_SCHOOL_PROMPT, reply_markup=back_to_menu())
+        send_and_track(bot, chat_id, get_application_school_prompt(), reply_markup=back_to_menu())
         user_states[chat_id] = UserState.APPLICATION_SCHOOL
 
         logger.debug(f"Пользователь {message.from_user.id} указал возраст")
@@ -94,7 +94,7 @@ def register_application_handlers(bot: TeleBot) -> None:
         delete_last_bot_message(bot, chat_id)
 
         # Запрашиваем класс
-        send_and_track(bot, chat_id, APPLICATION_CLASS_PROMPT, reply_markup=back_to_menu())
+        send_and_track(bot, chat_id, get_application_class_prompt(), reply_markup=back_to_menu())
         user_states[chat_id] = UserState.APPLICATION_CLASS
 
         logger.debug(f"Пользователь {message.from_user.id} указал школу")
@@ -109,7 +109,7 @@ def register_application_handlers(bot: TeleBot) -> None:
         delete_last_bot_message(bot, chat_id)
 
         # Запрашиваем username
-        send_and_track(bot, chat_id, APPLICATION_USERNAME_PROMPT, reply_markup=back_to_menu())
+        send_and_track(bot, chat_id, get_application_username_prompt(), reply_markup=back_to_menu())
         user_states[chat_id] = UserState.APPLICATION_USERNAME
 
         logger.debug(f"Пользователь {message.from_user.id} указал класс")
@@ -124,7 +124,7 @@ def register_application_handlers(bot: TeleBot) -> None:
         delete_last_bot_message(bot, chat_id)
 
         # Запрашиваем мотивацию
-        send_and_track(bot, chat_id, APPLICATION_MOTIVATION_PROMPT, reply_markup=back_to_menu())
+        send_and_track(bot, chat_id, get_application_motivation_prompt(), reply_markup=back_to_menu())
         user_states[chat_id] = UserState.APPLICATION_MOTIVATION
 
         logger.debug(f"Пользователь {message.from_user.id} указал username")
@@ -139,7 +139,7 @@ def register_application_handlers(bot: TeleBot) -> None:
         delete_last_bot_message(bot, chat_id)
 
         # Запрашиваем опыт
-        send_and_track(bot, chat_id, APPLICATION_EXPERIENCE_PROMPT, reply_markup=back_to_menu())
+        send_and_track(bot, chat_id, get_application_experience_prompt(), reply_markup=back_to_menu())
         user_states[chat_id] = UserState.APPLICATION_EXPERIENCE
 
         logger.debug(f"Пользователь {message.from_user.id} указал мотивацию")
@@ -154,7 +154,7 @@ def register_application_handlers(bot: TeleBot) -> None:
         delete_last_bot_message(bot, chat_id)
 
         # Запрашиваем контакты
-        send_and_track(bot, chat_id, APPLICATION_CONTACTS_PROMPT, reply_markup=back_to_menu())
+        send_and_track(bot, chat_id, get_application_contacts_prompt(), reply_markup=back_to_menu())
         user_states[chat_id] = UserState.APPLICATION_CONTACTS
 
         logger.debug(f"Пользователь {message.from_user.id} указал опыт")
@@ -183,7 +183,7 @@ def register_application_handlers(bot: TeleBot) -> None:
             delete_last_bot_message(bot, chat_id)
 
             # Отправляем подтверждение
-            send_and_track(bot, chat_id, APPLICATION_SUCCESS, reply_markup=back_to_menu())
+            send_and_track(bot, chat_id, get_application_success(), reply_markup=back_to_menu())
 
             # Очищаем состояние и данные
             del user_states[chat_id]

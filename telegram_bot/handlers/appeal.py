@@ -10,7 +10,7 @@ from telebot.types import Message
 from ..states import user_states, UserState, responses_map
 from ..config import BotConfig
 from ..utils import delete_message_safe, delete_last_bot_message, send_and_track
-from ..messages import APPEAL_PROMPT, APPEAL_SENT
+from ..messages import get_appeal_prompt, get_appeal_sent
 from ..keyboards import back_to_menu
 
 logger = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ def register_appeal_handlers(bot: TeleBot) -> None:
         delete_last_bot_message(bot, chat_id)
 
         # Отправляем промпт
-        send_and_track(bot, chat_id, APPEAL_PROMPT, reply_markup=back_to_menu())
+        send_and_track(bot, chat_id, get_appeal_prompt(), reply_markup=back_to_menu())
 
         # Устанавливаем состояние
         user_states[chat_id] = UserState.APPEAL
@@ -63,7 +63,7 @@ def register_appeal_handlers(bot: TeleBot) -> None:
             delete_last_bot_message(bot, chat_id)
 
             # Отправляем подтверждение
-            send_and_track(bot, chat_id, APPEAL_SENT, reply_markup=back_to_menu())
+            send_and_track(bot, chat_id, get_appeal_sent(), reply_markup=back_to_menu())
 
             # Очищаем состояние
             del user_states[chat_id]

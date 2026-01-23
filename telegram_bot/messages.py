@@ -54,26 +54,9 @@ def get_application_success() -> str:
 def get_back_to_menu() -> str:
     return message_manager.get('back_to_menu')
 
-# Статические сообщения (не редактируются)
+# Статические сообщения (не редактируются администратором)
 COUNCIL_RESPONSE = "<b>Пришёл ответ от Совета!</b> 📩\n\n{message}\n\n"
 ADMIN_RESPONSE_SENT = "✅ Ответ отправлен пользователю."
-
-# Обратная совместимость - оставляем константы
-WELCOME_MESSAGE = get_welcome_message()
-COUNCIL_INFO = get_council_info()
-LEADERSHIP_INFO = get_leadership_info()
-APPEAL_PROMPT = get_appeal_prompt()
-APPEAL_SENT = get_appeal_sent()
-APPLICATION_WELCOME = get_application_welcome()
-APPLICATION_AGE_PROMPT = get_application_age_prompt()
-APPLICATION_SCHOOL_PROMPT = get_application_school_prompt()
-APPLICATION_CLASS_PROMPT = get_application_class_prompt()
-APPLICATION_USERNAME_PROMPT = get_application_username_prompt()
-APPLICATION_MOTIVATION_PROMPT = get_application_motivation_prompt()
-APPLICATION_EXPERIENCE_PROMPT = get_application_experience_prompt()
-APPLICATION_CONTACTS_PROMPT = get_application_contacts_prompt()
-APPLICATION_SUCCESS = get_application_success()
-BACK_TO_MENU = get_back_to_menu()
 
 
 def format_application(data: dict) -> str:
