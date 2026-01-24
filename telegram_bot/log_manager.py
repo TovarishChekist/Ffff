@@ -150,6 +150,7 @@ class LogManager:
 
         info = {
             'category': category,
+            'title': self.LOG_CATEGORIES.get(category, category),
             'exists': os.path.exists(log_path),
             'size': 0,
             'size_mb': 0,
@@ -220,9 +221,8 @@ class LogManager:
         """
         logs_info = []
 
-        for category, title in self.LOG_CATEGORIES.items():
+        for category in self.LOG_CATEGORIES.keys():
             info = self.get_log_info(category)
-            info['title'] = title
             logs_info.append(info)
 
         return logs_info
