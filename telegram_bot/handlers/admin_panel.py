@@ -5,6 +5,7 @@
 
 import logging
 import time
+import os
 from telebot import TeleBot
 from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
@@ -23,6 +24,7 @@ def create_admin_menu() -> InlineKeyboardMarkup:
         InlineKeyboardButton("📝 Редактировать тексты", callback_data="admin_edit_texts"),
         InlineKeyboardButton("📊 Статистика", callback_data="admin_stats"),
         InlineKeyboardButton("📢 Рассылка", callback_data="admin_broadcast"),
+        InlineKeyboardButton("📋 Логи", callback_data="admin_logs"),
         InlineKeyboardButton("🔄 Сбросить все тексты", callback_data="admin_reset_all"),
         InlineKeyboardButton("❌ Закрыть", callback_data="admin_close")
     )
@@ -90,6 +92,101 @@ def create_message_actions_keyboard(key: str) -> InlineKeyboardMarkup:
 
     markup.add(
         InlineKeyboardButton("🔙 К списку", callback_data="admin_list_0")
+    )
+
+    return markup
+
+
+def create_logs_menu() -> InlineKeyboardMarkup:
+    """Создает меню управления логами"""
+    from ..log_manager import log_manager
+
+    markup = InlineKeyboardMarkup(row_width=1)
+
+    # Кнопки для каждой категории логов
+    logs_info = log_manager.get_all_logs_info()
+
+    for log_info in logs_info:
+        category = log_info['category']
+        title = log_info['title']
+        size_mb = log_info['size_mb']
+        exists_icon = "📄" if log_info['exists'] else "⚪"
+
+        button_text = f"{exists_icon} {title}"
+        if log_info['exists']:
+            button_text += f" ({size_mb} МБ)"
+
+        markup.add(
+            InlineKeyboardButton(button_text, callback_data=f"admin_log_view_{category}")
+        )
+
+    # Настройки автоочистки
+    markup.add(
+        InlineKeyboardButton("⚙️ Настройки автоочистки", callback_data="admin_log_autoclean_settings"),
+        InlineKeyboardButton("🗑️ Очистить все логи", callback_data="admin_log_clear_all_confirm"),
+        InlineKeyboardButton("🔙 В админ-меню", callback_data="admin_menu")
+    )
+
+    return markup
+
+
+def create_log_actions_keyboard(category: str) -> InlineKeyboardMarkup:
+    """Создает клавиатуру действий для конкретного лога"""
+    from ..log_manager import log_manager
+
+    markup = InlineKeyboardMarkup(row_width=1)
+
+    log_info = log_manager.get_log_info(category)
+
+    if log_info['exists']:
+        markup.add(
+            InlineKeyboardButton("📥 Скачать файл", callback_data=f"admin_log_download_{category}"),
+            InlineKeyboardButton("🗑️ Удалить", callback_data=f"admin_log_delete_{category}")
+        )
+
+    markup.add(
+        InlineKeyboardButton("🔙 К списку логов", callback_data="admin_logs")
+    )
+
+    return markup
+
+
+def create_autoclean_settings_keyboard() -> InlineKeyboardMarkup:
+    """Создает клавиатуру настроек автоочистки"""
+    from ..log_manager import log_manager
+
+    settings = log_manager.get_auto_cleanup_settings()
+    enabled = settings['enabled']
+
+    markup = InlineKeyboardMarkup(row_width=2)
+
+    # Кнопка вкл/выкл
+    toggle_text = "✅ Выключить" if enabled else "⚪ Включить"
+    markup.add(
+        InlineKeyboardButton(toggle_text, callback_data="admin_log_autoclean_toggle")
+    )
+
+    if enabled:
+        # Кнопки выбора интервала
+        current_interval = settings['interval_hours']
+
+        intervals = [
+            (6, "6 часов"),
+            (12, "12 часов"),
+            (24, "24 часа")
+        ]
+
+        for hours, label in intervals:
+            icon = "✅" if hours == current_interval else "⚪"
+            markup.add(
+                InlineKeyboardButton(
+                    f"{icon} {label}",
+                    callback_data=f"admin_log_autoclean_interval_{hours}"
+                )
+            )
+
+    markup.add(
+        InlineKeyboardButton("🔙 К логам", callback_data="admin_logs")
     )
 
     return markup
@@ -507,6 +604,306 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                 chat_id,
                 "🔧 <b>Админ-панель</b>",
                 reply_markup=create_admin_menu(),
+                parse_mode='HTML'
+            )
+
+        # ====================
+        # УПРАВЛЕНИЕ ЛОГАМИ
+        # ====================
+
+        # Главное меню логов
+        elif data == "admin_logs":
+            from ..log_manager import log_manager
+
+            logs_info = log_manager.get_all_logs_info()
+            total_size = sum(log['size_mb'] for log in logs_info)
+
+            text = f"""📋 <b>Управление логами</b>
+
+<b>Общая информация:</b>
+• Всего категорий: {len(logs_info)}
+• Общий размер: {round(total_size, 2)} МБ
+
+Выберите категорию лога для просмотра или управления:"""
+
+            bot.edit_message_text(
+                text,
+                chat_id,
+                message_id,
+                reply_markup=create_logs_menu(),
+                parse_mode='HTML'
+            )
+            bot.answer_callback_query(call.id)
+
+        # Просмотр конкретного лога
+        elif data.startswith("admin_log_view_"):
+            from ..log_manager import log_manager
+
+            category = data.replace("admin_log_view_", "")
+            log_info = log_manager.get_log_info(category)
+
+            if log_info['exists']:
+                text = f"""📄 <b>{log_info['title']}</b>
+
+<b>Информация:</b>
+• Размер: {log_info['size_mb']} МБ ({log_info['size']} байт)
+• Строк: {log_info['lines']}
+• Изменен: {log_info['modified'][:19].replace('T', ' ')}
+
+<i>Что вы хотите сделать с этим логом?</i>"""
+            else:
+                text = f"""⚪ <b>{log_info['title']}</b>
+
+<i>Этот лог пока пуст.</i>"""
+
+            bot.edit_message_text(
+                text,
+                chat_id,
+                message_id,
+                reply_markup=create_log_actions_keyboard(category),
+                parse_mode='HTML'
+            )
+            bot.answer_callback_query(call.id)
+
+        # Скачивание лога
+        elif data.startswith("admin_log_download_"):
+            from ..log_manager import log_manager
+
+            category = data.replace("admin_log_download_", "")
+            log_path = log_manager.get_log_file_path(category)
+            log_info = log_manager.get_log_info(category)
+
+            if os.path.exists(log_path):
+                bot.answer_callback_query(call.id, "📥 Отправляю файл...")
+
+                try:
+                    with open(log_path, 'rb') as f:
+                        bot.send_document(
+                            chat_id,
+                            f,
+                            caption=f"📄 {log_info['title']}\nРазмер: {log_info['size_mb']} МБ",
+                            visible_file_name=f"{category}.log"
+                        )
+                    logger.info(f"Администратор {call.from_user.id} скачал лог {category}")
+                except Exception as e:
+                    bot.send_message(
+                        chat_id,
+                        f"❌ Ошибка отправки файла: {e}",
+                        parse_mode='HTML'
+                    )
+                    logger.error(f"Ошибка отправки лога {category}: {e}")
+            else:
+                bot.answer_callback_query(call.id, "❌ Файл не найден", show_alert=True)
+
+        # Удаление лога
+        elif data.startswith("admin_log_delete_"):
+            from ..log_manager import log_manager
+
+            category = data.replace("admin_log_delete_", "")
+            log_info = log_manager.get_log_info(category)
+
+            text = f"""⚠️ <b>Подтверждение удаления</b>
+
+Вы уверены, что хотите удалить лог <b>{log_info['title']}</b>?
+
+<b>Размер:</b> {log_info['size_mb']} МБ
+<b>Строк:</b> {log_info['lines']}
+
+<i>Это действие нельзя отменить!</i>"""
+
+            markup = InlineKeyboardMarkup()
+            markup.row(
+                InlineKeyboardButton("✅ Да, удалить", callback_data=f"admin_log_delete_confirm_{category}"),
+                InlineKeyboardButton("❌ Отмена", callback_data=f"admin_log_view_{category}")
+            )
+
+            bot.edit_message_text(
+                text,
+                chat_id,
+                message_id,
+                reply_markup=markup,
+                parse_mode='HTML'
+            )
+            bot.answer_callback_query(call.id)
+
+        # Подтверждение удаления лога
+        elif data.startswith("admin_log_delete_confirm_"):
+            from ..log_manager import log_manager
+
+            category = data.replace("admin_log_delete_confirm_", "")
+            log_info = log_manager.get_log_info(category)
+
+            if log_manager.delete_log(category):
+                text = f"""✅ <b>Лог удален</b>
+
+<b>{log_info['title']}</b> успешно удален.
+
+<b>Было:</b>
+• Размер: {log_info['size_mb']} МБ
+• Строк: {log_info['lines']}"""
+
+                logger.info(f"Администратор {call.from_user.id} удалил лог {category}")
+            else:
+                text = f"❌ Ошибка удаления лога {log_info['title']}"
+
+            markup = InlineKeyboardMarkup()
+            markup.add(InlineKeyboardButton("🔙 К логам", callback_data="admin_logs"))
+
+            bot.edit_message_text(
+                text,
+                chat_id,
+                message_id,
+                reply_markup=markup,
+                parse_mode='HTML'
+            )
+            bot.answer_callback_query(call.id)
+
+        # Очистка всех логов (подтверждение)
+        elif data == "admin_log_clear_all_confirm":
+            text = """⚠️ <b>Подтверждение очистки</b>
+
+Вы уверены, что хотите удалить <b>ВСЕ логи</b>?
+
+Это действие нельзя отменить!"""
+
+            markup = InlineKeyboardMarkup()
+            markup.row(
+                InlineKeyboardButton("✅ Да, очистить все", callback_data="admin_log_clear_all"),
+                InlineKeyboardButton("❌ Отмена", callback_data="admin_logs")
+            )
+
+            bot.edit_message_text(
+                text,
+                chat_id,
+                message_id,
+                reply_markup=markup,
+                parse_mode='HTML'
+            )
+            bot.answer_callback_query(call.id)
+
+        # Очистка всех логов (выполнение)
+        elif data == "admin_log_clear_all":
+            from ..log_manager import log_manager
+
+            results = log_manager.clear_all_logs()
+            deleted_count = sum(1 for success in results.values() if success)
+
+            text = f"""✅ <b>Логи очищены</b>
+
+Удалено логов: {deleted_count}
+
+<i>Все логи успешно очищены.</i>"""
+
+            markup = InlineKeyboardMarkup()
+            markup.add(InlineKeyboardButton("🔙 К логам", callback_data="admin_logs"))
+
+            bot.edit_message_text(
+                text,
+                chat_id,
+                message_id,
+                reply_markup=markup,
+                parse_mode='HTML'
+            )
+            bot.answer_callback_query(call.id, "✅ Все логи очищены")
+            logger.info(f"Администратор {call.from_user.id} очистил все логи")
+
+        # Настройки автоочистки
+        elif data == "admin_log_autoclean_settings":
+            from ..log_manager import log_manager
+
+            settings = log_manager.get_auto_cleanup_settings()
+
+            status_icon = "✅" if settings['enabled'] else "⚪"
+            status_text = "включена" if settings['enabled'] else "выключена"
+
+            text = f"""⚙️ <b>Настройки автоочистки</b>
+
+<b>Статус:</b> {status_icon} {status_text}"""
+
+            if settings['enabled']:
+                text += f"""
+<b>Интервал:</b> {settings['interval_hours']} часов
+<b>Последняя очистка:</b> {settings['last_cleanup'][:19].replace('T', ' ') if settings['last_cleanup'] else 'Не проводилась'}
+
+<i>Автоочистка удаляет все логи через каждые {settings['interval_hours']} часов.</i>"""
+            else:
+                text += "\n\n<i>Включите автоочистку, чтобы логи автоматически удалялись через заданный интервал.</i>"
+
+            bot.edit_message_text(
+                text,
+                chat_id,
+                message_id,
+                reply_markup=create_autoclean_settings_keyboard(),
+                parse_mode='HTML'
+            )
+            bot.answer_callback_query(call.id)
+
+        # Переключение автоочистки
+        elif data == "admin_log_autoclean_toggle":
+            from ..log_manager import log_manager
+
+            settings = log_manager.get_auto_cleanup_settings()
+            new_status = not settings['enabled']
+
+            log_manager.set_auto_cleanup(new_status, settings['interval_hours'])
+
+            status_text = "включена" if new_status else "выключена"
+            bot.answer_callback_query(call.id, f"Автоочистка {status_text}")
+
+            logger.info(f"Администратор {call.from_user.id} {'включил' if new_status else 'выключил'} автоочистку логов")
+
+            # Обновляем меню
+            settings = log_manager.get_auto_cleanup_settings()
+            status_icon = "✅" if settings['enabled'] else "⚪"
+            status_text = "включена" if settings['enabled'] else "выключена"
+
+            text = f"""⚙️ <b>Настройки автоочистки</b>
+
+<b>Статус:</b> {status_icon} {status_text}"""
+
+            if settings['enabled']:
+                text += f"""
+<b>Интервал:</b> {settings['interval_hours']} часов
+
+<i>Выберите интервал автоочистки:</i>"""
+            else:
+                text += "\n\n<i>Включите автоочистку, чтобы логи автоматически удалялись через заданный интервал.</i>"
+
+            bot.edit_message_text(
+                text,
+                chat_id,
+                message_id,
+                reply_markup=create_autoclean_settings_keyboard(),
+                parse_mode='HTML'
+            )
+
+        # Установка интервала автоочистки
+        elif data.startswith("admin_log_autoclean_interval_"):
+            from ..log_manager import log_manager
+
+            interval = int(data.replace("admin_log_autoclean_interval_", ""))
+            log_manager.set_auto_cleanup(True, interval)
+
+            bot.answer_callback_query(call.id, f"✅ Интервал изменен на {interval} часов")
+
+            logger.info(f"Администратор {call.from_user.id} установил интервал автоочистки {interval}ч")
+
+            # Обновляем меню
+            settings = log_manager.get_auto_cleanup_settings()
+
+            text = f"""⚙️ <b>Настройки автоочистки</b>
+
+<b>Статус:</b> ✅ включена
+<b>Интервал:</b> {settings['interval_hours']} часов
+<b>Последняя очистка:</b> {settings['last_cleanup'][:19].replace('T', ' ') if settings['last_cleanup'] else 'Не проводилась'}
+
+<i>Выберите интервал автоочистки:</i>"""
+
+            bot.edit_message_text(
+                text,
+                chat_id,
+                message_id,
+                reply_markup=create_autoclean_settings_keyboard(),
                 parse_mode='HTML'
             )
 
