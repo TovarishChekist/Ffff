@@ -613,12 +613,13 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
 
         # Главное меню логов
         elif data == "admin_logs":
-            from ..log_manager import log_manager
+            try:
+                from ..log_manager import log_manager
 
-            logs_info = log_manager.get_all_logs_info()
-            total_size = sum(log['size_mb'] for log in logs_info)
+                logs_info = log_manager.get_all_logs_info()
+                total_size = sum(log['size_mb'] for log in logs_info)
 
-            text = f"""📋 <b>Управление логами</b>
+                text = f"""📋 <b>Управление логами</b>
 
 <b>Общая информация:</b>
 • Всего категорий: {len(logs_info)}
@@ -626,14 +627,17 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
 
 Выберите категорию лога для просмотра или управления:"""
 
-            bot.edit_message_text(
-                text,
-                chat_id,
-                message_id,
-                reply_markup=create_logs_menu(),
-                parse_mode='HTML'
-            )
-            bot.answer_callback_query(call.id)
+                bot.edit_message_text(
+                    text,
+                    chat_id,
+                    message_id,
+                    reply_markup=create_logs_menu(),
+                    parse_mode='HTML'
+                )
+                bot.answer_callback_query(call.id)
+            except Exception as e:
+                logger.error(f"Ошибка при открытии меню логов: {e}", exc_info=True)
+                bot.answer_callback_query(call.id, f"❌ Ошибка: {e}", show_alert=True)
 
         # Просмотр конкретного лога
         elif data.startswith("admin_log_view_"):

@@ -4,50 +4,29 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
 venv/
+env/
 ENV/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
 
-# Flask
-instance/
-.webassets-cache
-*.db
+# Logs
+*.log
+telegram_bot/logs/
+telegram_bot/bot.log
+
+# Settings
+telegram_bot/log_settings.json
+telegram_bot/users.json
+telegram_bot/custom_messages.json
 
 # Environment
 .env
-.flaskenv
+.env.local
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
-
-# Uploads
-static/uploads/*
-!static/uploads/.gitkeep
-
-# Logs
-*.log
-
-# Telegram bot custom messages
-custom_messages.json
 
 # OS
 .DS_Store

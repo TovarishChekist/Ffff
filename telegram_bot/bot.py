@@ -22,13 +22,19 @@ from .handlers import (
 # Настройка логирования
 def setup_logging():
     """Настраивает логирование для бота"""
+    import os
+
+    # Определяем путь к файлу лога
+    base_dir = os.path.dirname(__file__)
+    log_file = os.path.join(base_dir, 'bot.log')
+
     log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     logging.basicConfig(
         level=getattr(logging, BotConfig.LOG_LEVEL.upper(), logging.INFO),
         format=log_format,
         handlers=[
             logging.StreamHandler(sys.stdout),
-            logging.FileHandler('bot.log', encoding='utf-8')
+            logging.FileHandler(log_file, encoding='utf-8')
         ]
     )
 
@@ -67,6 +73,19 @@ def main():
             logger.info(f"✓ Загружено администраторов: {len(BotConfig.ADMIN_IDS)}")
         else:
             logger.warning("⚠ Администраторы не настроены. Админ-панель будет недоступна.")
+
+        # Инициализация менеджеров
+        from .log_manager import log_manager
+        from .user_manager import user_manager
+        logger.info("✓ Менеджеры инициализированы")
+        logger.info(f"  - Пользователей в базе: {user_manager.get_user_count()}")
+
+        # Проверяем настройки автоочистки логов
+        autoclean_settings = log_manager.get_auto_cleanup_settings()
+        if autoclean_settings['enabled']:
+            logger.info(f"  - Автоочистка логов: включена ({autoclean_settings['interval_hours']}ч)")
+        else:
+            logger.info(f"  - Автоочистка логов: выключена")
 
         # Настройка API
         configure_api()
