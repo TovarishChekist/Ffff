@@ -25,6 +25,9 @@ class UserState(str, Enum):
     # Админ-панель - редактирование сообщений
     ADMIN_EDIT_MESSAGE = "admin_edit_message"
 
+    # Админ-панель - рассылка
+    ADMIN_BROADCAST_COMPOSE = "admin_broadcast_compose"
+
 
 # Словари для хранения состояний пользователей
 user_states = {}  # chat_id -> UserState

@@ -10,6 +10,7 @@ from telebot.types import Message
 
 from .states import last_bot_message
 from .keyboards import main_menu
+from .user_manager import user_manager
 
 logger = logging.getLogger(__name__)
 
@@ -92,3 +93,22 @@ def send_and_track(bot: TeleBot, chat_id: int, text: str, reply_markup=None, par
     sent = bot.send_message(chat_id, text, reply_markup=reply_markup, parse_mode=parse_mode)
     last_bot_message[chat_id] = sent.message_id
     return sent
+
+
+def save_user_from_message(message: Message) -> None:
+    """
+    Сохраняет пользователя из объекта сообщения
+
+    Args:
+        message: Объект сообщения Telegram
+    """
+    try:
+        user = message.from_user
+        user_manager.add_user(
+            user_id=user.id,
+            username=user.username,
+            first_name=user.first_name,
+            last_name=user.last_name
+        )
+    except Exception as e:
+        logger.error(f"Ошибка сохранения пользователя: {e}")

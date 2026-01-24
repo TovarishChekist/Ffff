@@ -8,7 +8,7 @@ from telebot import TeleBot
 from telebot.types import Message
 
 from ..states import user_states, user_data
-from ..utils import send_menu, delete_message_safe, delete_last_bot_message, send_and_track
+from ..utils import send_menu, delete_message_safe, delete_last_bot_message, send_and_track, save_user_from_message
 from ..messages import (
     get_council_info,
     get_leadership_info,
@@ -31,6 +31,8 @@ def register_common_handlers(bot: TeleBot) -> None:
     def cmd_start(message: Message):
         """Обработчик команды /start"""
         logger.info(f"Пользователь {message.from_user.id} запустил бота")
+        # Сохраняем пользователя в базу
+        save_user_from_message(message)
         send_menu(bot, message.chat.id)
 
     @bot.message_handler(func=lambda m: m.text in ["🔙 Вернуться в меню", "Вернуться в меню"])
@@ -38,6 +40,9 @@ def register_common_handlers(bot: TeleBot) -> None:
         """Обработчик возврата в главное меню"""
         chat_id = message.chat.id
         logger.info(f"Пользователь {message.from_user.id} вернулся в меню")
+
+        # Сохраняем пользователя
+        save_user_from_message(message)
 
         # Очищаем состояние
         if chat_id in user_states:

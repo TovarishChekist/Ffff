@@ -4,6 +4,7 @@
 """
 
 import logging
+import time
 from telebot import TeleBot
 from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
@@ -21,6 +22,7 @@ def create_admin_menu() -> InlineKeyboardMarkup:
     markup.add(
         InlineKeyboardButton("📝 Редактировать тексты", callback_data="admin_edit_texts"),
         InlineKeyboardButton("📊 Статистика", callback_data="admin_stats"),
+        InlineKeyboardButton("📢 Рассылка", callback_data="admin_broadcast"),
         InlineKeyboardButton("🔄 Сбросить все тексты", callback_data="admin_reset_all"),
         InlineKeyboardButton("❌ Закрыть", callback_data="admin_close")
     )
@@ -327,6 +329,42 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
             )
             bot.answer_callback_query(call.id)
 
+        # Рассылка
+        elif data == "admin_broadcast":
+            from ..user_manager import user_manager
+            user_count = user_manager.get_user_count()
+            stats = user_manager.get_stats()
+
+            text = f"""📢 <b>Рассылка сообщений</b>
+
+<b>Статистика пользователей:</b>
+• Всего пользователей: {stats['total_users']}
+• Активных сегодня: {stats['active_today']}
+• Всего взаимодействий: {stats['total_interactions']}
+
+<i>Отправьте сообщение, которое хотите разослать всем пользователям.
+Вы сможете предпросмотреть его перед отправкой.</i>
+
+<b>Форматирование:</b>
+• Используйте встроенное форматирование Telegram
+• Или HTML-теги: &lt;b&gt;, &lt;i&gt;, &lt;a href=""&gt;, &lt;code&gt;"""
+
+            markup = InlineKeyboardMarkup()
+            markup.add(InlineKeyboardButton("❌ Отмена", callback_data="admin_menu"))
+
+            bot.edit_message_text(
+                text,
+                chat_id,
+                message_id,
+                reply_markup=markup,
+                parse_mode='HTML'
+            )
+            bot.answer_callback_query(call.id)
+
+            # Устанавливаем состояние ожидания сообщения для рассылки
+            from ..states import user_states, UserState
+            user_states[chat_id] = UserState.ADMIN_BROADCAST_COMPOSE
+
         # Сброс всех текстов
         elif data == "admin_reset_all":
             text = """⚠️ <b>Подтверждение сброса</b>
@@ -376,6 +414,101 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
         elif data == "admin_close":
             delete_message_safe(bot, chat_id, message_id)
             bot.answer_callback_query(call.id, "Админ-панель закрыта")
+
+        # Подтверждение рассылки
+        elif data == "broadcast_confirm":
+            if chat_id not in user_data or 'broadcast_text' not in user_data[chat_id]:
+                bot.answer_callback_query(call.id, "❌ Ошибка: текст рассылки не найден")
+                return
+
+            broadcast_text = user_data[chat_id]['broadcast_text']
+
+            # Удаляем сообщение с предпросмотром
+            delete_message_safe(bot, chat_id, message_id)
+
+            # Отправляем уведомление о начале рассылки
+            status_msg = bot.send_message(
+                chat_id,
+                "📢 <b>Рассылка началась...</b>\n\n<i>Пожалуйста, подождите</i>",
+                parse_mode='HTML'
+            )
+
+            # Выполняем рассылку
+            from ..user_manager import user_manager
+            import time
+
+            all_users = user_manager.get_all_user_ids()
+            sent_count = 0
+            failed_count = 0
+            failed_users = []
+
+            for user_id in all_users:
+                try:
+                    bot.send_message(user_id, broadcast_text, parse_mode='HTML')
+                    sent_count += 1
+                    # Небольшая задержка чтобы не попасть в rate limit Telegram
+                    time.sleep(0.05)
+                except Exception as e:
+                    failed_count += 1
+                    failed_users.append(user_id)
+                    logger.warning(f"Не удалось отправить сообщение пользователю {user_id}: {e}")
+
+            # Удаляем статус сообщение
+            delete_message_safe(bot, chat_id, status_msg.message_id)
+
+            # Отправляем результаты
+            result_text = f"""✅ <b>Рассылка завершена!</b>
+
+<b>Результаты:</b>
+• Отправлено: {sent_count}
+• Не доставлено: {failed_count}
+• Всего пользователей: {len(all_users)}
+
+<b>Успешность:</b> {round(sent_count / len(all_users) * 100, 1) if all_users else 0}%"""
+
+            if failed_users and failed_count <= 10:
+                result_text += f"\n\n<b>Не доставлено пользователям:</b>\n"
+                for uid in failed_users[:10]:
+                    result_text += f"• {uid}\n"
+
+            markup = InlineKeyboardMarkup()
+            markup.add(InlineKeyboardButton("🔙 В админ-меню", callback_data="admin_menu"))
+
+            bot.send_message(
+                chat_id,
+                result_text,
+                reply_markup=markup,
+                parse_mode='HTML'
+            )
+
+            logger.info(f"Администратор {message.from_user.id} выполнил рассылку: {sent_count} успешно, {failed_count} ошибок")
+
+            # Очищаем состояние
+            if chat_id in user_states:
+                del user_states[chat_id]
+            if chat_id in user_data:
+                del user_data[chat_id]
+
+            bot.answer_callback_query(call.id)
+
+        # Отмена рассылки
+        elif data == "broadcast_cancel":
+            delete_message_safe(bot, chat_id, message_id)
+            bot.answer_callback_query(call.id, "❌ Рассылка отменена")
+
+            # Очищаем состояние
+            if chat_id in user_states:
+                del user_states[chat_id]
+            if chat_id in user_data:
+                del user_data[chat_id]
+
+            # Показываем админ-меню
+            bot.send_message(
+                chat_id,
+                "🔧 <b>Админ-панель</b>",
+                reply_markup=create_admin_menu(),
+                parse_mode='HTML'
+            )
 
     @bot.message_handler(func=lambda m: m.chat.id in user_states and user_states[m.chat.id] == UserState.ADMIN_EDIT_MESSAGE)
     def process_message_edit(message: Message):
@@ -433,3 +566,56 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
         # Очищаем состояние
         del user_states[chat_id]
         del user_data[chat_id]
+
+    @bot.message_handler(func=lambda m: m.chat.id in user_states and user_states[m.chat.id] == UserState.ADMIN_BROADCAST_COMPOSE)
+    def process_broadcast_message(message: Message):
+        """Обрабатывает сообщение для рассылки"""
+        chat_id = message.chat.id
+
+        if not BotConfig.is_admin(message.from_user.id):
+            return
+
+        # Проверка на отмену
+        if message.text == "/cancel":
+            del user_states[chat_id]
+            if chat_id in user_data:
+                del user_data[chat_id]
+            bot.reply_to(message, "❌ Рассылка отменена")
+            return
+
+        # Получаем текст с HTML-форматированием
+        broadcast_text = message.html_text if message.html_text else message.text
+
+        # Сохраняем текст рассылки
+        user_data[chat_id] = {
+            'broadcast_text': broadcast_text,
+            'message_id': message.message_id
+        }
+
+        # Получаем статистику
+        from ..user_manager import user_manager
+        user_count = user_manager.get_user_count()
+
+        # Показываем предпросмотр
+        preview_text = f"""📢 <b>Предпросмотр рассылки</b>
+
+<b>Будет отправлено {user_count} пользователям</b>
+
+━━━━━━━━━━━━━━━━
+{broadcast_text}
+━━━━━━━━━━━━━━━━
+
+<i>Проверьте сообщение перед отправкой</i>"""
+
+        markup = InlineKeyboardMarkup()
+        markup.row(
+            InlineKeyboardButton("✅ Отправить всем", callback_data="broadcast_confirm"),
+            InlineKeyboardButton("❌ Отмена", callback_data="broadcast_cancel")
+        )
+
+        bot.send_message(
+            chat_id,
+            preview_text,
+            reply_markup=markup,
+            parse_mode='HTML'
+        )
