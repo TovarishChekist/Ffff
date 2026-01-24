@@ -172,6 +172,13 @@ nano .env  # Заполните токен и ID чатов
 python run_bot.py
 ```
 
+**Развертывание на VPS (рекомендуется):**
+```bash
+# Полная инструкция для Spaceweb VPS
+cat DEPLOYMENT_SPACEWEB_VPS.md
+```
+✅ **Бот работает 24/7** | Автозапуск | systemd | Полный контроль
+
 **Развертывание на PythonAnywhere:**
 ```bash
 # Быстрая инструкция
@@ -214,7 +221,9 @@ cat DEPLOYMENT_PYTHONANYWHERE.md
 ### Документация
 - [README по боту](telegram_bot/README.md) - подробное описание архитектуры
 - [QUICKSTART](QUICKSTART.md) - развертывание за 5 минут
+- [DEPLOYMENT_SPACEWEB_VPS](DEPLOYMENT_SPACEWEB_VPS.md) - **VPS Spaceweb** (рекомендуется) - бот 24/7 с автозапуском
 - [SIMPLE_PYTHONANYWHERE](SIMPLE_PYTHONANYWHERE.md) - **для новичков!** Простая инструкция за 10 минут
+- [UPDATE_PYTHONANYWHERE](UPDATE_PYTHONANYWHERE.md) - обновление кода на PythonAnywhere
 - [DEPLOYMENT_PYTHONANYWHERE](DEPLOYMENT_PYTHONANYWHERE.md) - полная инструкция по PythonAnywhere
 - [DEPLOYMENT_COLAB](DEPLOYMENT_COLAB.md) - запуск на Google Colab (только тестирование)
 - [CHANGELOG](CHANGELOG_BOT.md) - история изменений
