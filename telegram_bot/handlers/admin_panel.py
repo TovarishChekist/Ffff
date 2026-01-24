@@ -641,13 +641,16 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
 
         # Просмотр конкретного лога
         elif data.startswith("admin_log_view_"):
-            from ..log_manager import log_manager
+            try:
+                from ..log_manager import log_manager
 
-            category = data.replace("admin_log_view_", "")
-            log_info = log_manager.get_log_info(category)
+                category = data.replace("admin_log_view_", "")
+                log_info = log_manager.get_log_info(category)
 
-            if log_info['exists']:
-                text = f"""📄 <b>{log_info['title']}</b>
+                logger.info(f"Просмотр лога: category={category}, exists={log_info['exists']}")
+
+                if log_info['exists']:
+                    text = f"""📄 <b>{log_info['title']}</b>
 
 <b>Информация:</b>
 • Размер: {log_info['size_mb']} МБ ({log_info['size']} байт)
@@ -655,49 +658,72 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
 • Изменен: {log_info['modified'][:19].replace('T', ' ')}
 
 <i>Что вы хотите сделать с этим логом?</i>"""
-            else:
-                text = f"""⚪ <b>{log_info['title']}</b>
+                else:
+                    text = f"""⚪ <b>{log_info['title']}</b>
 
-<i>Этот лог пока пуст.</i>"""
+<i>Этот лог пока пуст.</i>
 
-            bot.edit_message_text(
-                text,
-                chat_id,
-                message_id,
-                reply_markup=create_log_actions_keyboard(category),
-                parse_mode='HTML'
-            )
-            bot.answer_callback_query(call.id)
+Файл будет создан автоматически при работе бота."""
+
+                bot.edit_message_text(
+                    text,
+                    chat_id,
+                    message_id,
+                    reply_markup=create_log_actions_keyboard(category),
+                    parse_mode='HTML'
+                )
+                bot.answer_callback_query(call.id)
+            except Exception as e:
+                logger.error(f"Ошибка при просмотре лога: {e}", exc_info=True)
+                bot.answer_callback_query(call.id, f"❌ Ошибка: {e}", show_alert=True)
 
         # Скачивание лога
         elif data.startswith("admin_log_download_"):
-            from ..log_manager import log_manager
+            try:
+                from ..log_manager import log_manager
 
-            category = data.replace("admin_log_download_", "")
-            log_path = log_manager.get_log_file_path(category)
-            log_info = log_manager.get_log_info(category)
+                category = data.replace("admin_log_download_", "")
+                log_path = log_manager.get_log_file_path(category)
+                log_info = log_manager.get_log_info(category)
 
-            if os.path.exists(log_path):
-                bot.answer_callback_query(call.id, "📥 Отправляю файл...")
+                logger.info(f"Попытка скачать лог: category={category}, path={log_path}, exists={os.path.exists(log_path)}")
 
-                try:
-                    with open(log_path, 'rb') as f:
-                        bot.send_document(
-                            chat_id,
-                            f,
-                            caption=f"📄 {log_info['title']}\nРазмер: {log_info['size_mb']} МБ",
-                            visible_file_name=f"{category}.log"
-                        )
-                    logger.info(f"Администратор {call.from_user.id} скачал лог {category}")
-                except Exception as e:
-                    bot.send_message(
-                        chat_id,
-                        f"❌ Ошибка отправки файла: {e}",
-                        parse_mode='HTML'
-                    )
-                    logger.error(f"Ошибка отправки лога {category}: {e}")
-            else:
-                bot.answer_callback_query(call.id, "❌ Файл не найден", show_alert=True)
+                if os.path.exists(log_path):
+                    bot.answer_callback_query(call.id, "📥 Отправляю файл...")
+
+                    try:
+                        # Отправляем файл
+                        with open(log_path, 'rb') as f:
+                            bot.send_document(
+                                chat_id,
+                                f,
+                                caption=f"📄 {log_info['title']}\nРазмер: {log_info['size_mb']} МБ",
+                                visible_file_name=f"{category}.log"
+                            )
+                        logger.info(f"Администратор {call.from_user.id} скачал лог {category}")
+                        bot.answer_callback_query(call.id)
+                    except Exception as e:
+                        error_msg = f"❌ Ошибка отправки файла: {e}"
+                        bot.send_message(chat_id, error_msg, parse_mode='HTML')
+                        logger.error(f"Ошибка отправки лога {category}: {e}", exc_info=True)
+                        bot.answer_callback_query(call.id, "❌ Ошибка отправки", show_alert=True)
+                else:
+                    # Файл не существует - создадим пустой
+                    logger.warning(f"Лог {category} не существует по пути {log_path}")
+
+                    text = f"""⚠️ <b>Лог пуст</b>
+
+Файл <b>{log_info['title']}</b> пока не создан.
+
+Это нормально, если бот недавно запущен или эта категория логов ещё не использовалась.
+
+<i>Логи создаются автоматически при работе бота.</i>"""
+
+                    bot.send_message(chat_id, text, parse_mode='HTML')
+                    bot.answer_callback_query(call.id, "📄 Лог пока пуст")
+            except Exception as e:
+                logger.error(f"Критическая ошибка при скачивании лога: {e}", exc_info=True)
+                bot.answer_callback_query(call.id, f"❌ Ошибка: {str(e)[:100]}", show_alert=True)
 
         # Удаление лога
         elif data.startswith("admin_log_delete_"):
