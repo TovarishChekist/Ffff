@@ -514,47 +514,81 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
 
         # Подтверждение рассылки
         elif data == "broadcast_confirm":
-            if chat_id not in user_data or 'broadcast_text' not in user_data[chat_id]:
-                bot.answer_callback_query(call.id, "❌ Ошибка: текст рассылки не найден")
-                return
+            try:
+                logger.info(f"Начало рассылки от администратора {call.from_user.id}")
 
-            broadcast_text = user_data[chat_id]['broadcast_text']
+                if chat_id not in user_data or 'broadcast_text' not in user_data[chat_id]:
+                    bot.answer_callback_query(call.id, "❌ Ошибка: текст рассылки не найден")
+                    logger.error(f"Текст рассылки не найден в user_data для chat_id={chat_id}")
+                    return
 
-            # Удаляем сообщение с предпросмотром
-            delete_message_safe(bot, chat_id, message_id)
+                broadcast_text = user_data[chat_id]['broadcast_text']
+                logger.info(f"Текст рассылки получен, длина: {len(broadcast_text)}")
 
-            # Отправляем уведомление о начале рассылки
-            status_msg = bot.send_message(
-                chat_id,
-                "📢 <b>Рассылка началась...</b>\n\n<i>Пожалуйста, подождите</i>",
-                parse_mode='HTML'
-            )
+                # Получаем список пользователей
+                from ..user_manager import user_manager
+                all_users = user_manager.get_all_user_ids()
 
-            # Выполняем рассылку
-            from ..user_manager import user_manager
-            import time
+                logger.info(f"Получено пользователей для рассылки: {len(all_users)}")
 
-            all_users = user_manager.get_all_user_ids()
-            sent_count = 0
-            failed_count = 0
-            failed_users = []
+                # Проверяем есть ли пользователи
+                if not all_users:
+                    bot.answer_callback_query(call.id, "⚠️ Нет пользователей для рассылки")
 
-            for user_id in all_users:
-                try:
-                    bot.send_message(user_id, broadcast_text, parse_mode='HTML')
-                    sent_count += 1
-                    # Небольшая задержка чтобы не попасть в rate limit Telegram
-                    time.sleep(0.05)
-                except Exception as e:
-                    failed_count += 1
-                    failed_users.append(user_id)
-                    logger.warning(f"Не удалось отправить сообщение пользователю {user_id}: {e}")
+                    text = """⚠️ <b>Нет пользователей</b>
 
-            # Удаляем статус сообщение
-            delete_message_safe(bot, chat_id, status_msg.message_id)
+База пользователей пуста!
 
-            # Отправляем результаты
-            result_text = f"""✅ <b>Рассылка завершена!</b>
+Пользователи появятся в базе когда начнут взаимодействовать с ботом (отправят /start).
+
+<i>Подождите пока кто-то напишет боту, и тогда сможете сделать рассылку.</i>"""
+
+                    bot.edit_message_text(
+                        text,
+                        chat_id,
+                        message_id,
+                        reply_markup=InlineKeyboardMarkup().add(
+                            InlineKeyboardButton("🔙 В админ-меню", callback_data="admin_menu")
+                        ),
+                        parse_mode='HTML'
+                    )
+
+                    logger.warning("Попытка рассылки при пустой базе пользователей")
+                    return
+
+                # Удаляем сообщение с предпросмотром
+                delete_message_safe(bot, chat_id, message_id)
+
+                # Отправляем уведомление о начале рассылки
+                status_msg = bot.send_message(
+                    chat_id,
+                    f"📢 <b>Рассылка началась...</b>\n\n<i>Отправка {len(all_users)} пользователям</i>",
+                    parse_mode='HTML'
+                )
+
+                # Выполняем рассылку
+                import time
+
+                sent_count = 0
+                failed_count = 0
+                failed_users = []
+
+                for user_id in all_users:
+                    try:
+                        bot.send_message(user_id, broadcast_text, parse_mode='HTML')
+                        sent_count += 1
+                        # Небольшая задержка чтобы не попасть в rate limit Telegram
+                        time.sleep(0.05)
+                    except Exception as e:
+                        failed_count += 1
+                        failed_users.append(user_id)
+                        logger.warning(f"Не удалось отправить сообщение пользователю {user_id}: {e}")
+
+                # Удаляем статус сообщение
+                delete_message_safe(bot, chat_id, status_msg.message_id)
+
+                # Отправляем результаты
+                result_text = f"""✅ <b>Рассылка завершена!</b>
 
 <b>Результаты:</b>
 • Отправлено: {sent_count}
@@ -563,30 +597,66 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
 
 <b>Успешность:</b> {round(sent_count / len(all_users) * 100, 1) if all_users else 0}%"""
 
-            if failed_users and failed_count <= 10:
-                result_text += f"\n\n<b>Не доставлено пользователям:</b>\n"
-                for uid in failed_users[:10]:
-                    result_text += f"• {uid}\n"
+                if failed_users and failed_count <= 10:
+                    result_text += f"\n\n<b>Не доставлено пользователям:</b>\n"
+                    for uid in failed_users[:10]:
+                        result_text += f"• {uid}\n"
 
-            markup = InlineKeyboardMarkup()
-            markup.add(InlineKeyboardButton("🔙 В админ-меню", callback_data="admin_menu"))
+                markup = InlineKeyboardMarkup()
+                markup.add(InlineKeyboardButton("🔙 В админ-меню", callback_data="admin_menu"))
 
-            bot.send_message(
-                chat_id,
-                result_text,
-                reply_markup=markup,
-                parse_mode='HTML'
-            )
+                bot.send_message(
+                    chat_id,
+                    result_text,
+                    reply_markup=markup,
+                    parse_mode='HTML'
+                )
 
-            logger.info(f"Администратор {message.from_user.id} выполнил рассылку: {sent_count} успешно, {failed_count} ошибок")
+                logger.info(f"Администратор {call.from_user.id} выполнил рассылку: {sent_count} успешно, {failed_count} ошибок")
 
-            # Очищаем состояние
-            if chat_id in user_states:
-                del user_states[chat_id]
-            if chat_id in user_data:
-                del user_data[chat_id]
+                # Очищаем состояние
+                if chat_id in user_states:
+                    del user_states[chat_id]
+                if chat_id in user_data:
+                    del user_data[chat_id]
 
-            bot.answer_callback_query(call.id)
+                bot.answer_callback_query(call.id)
+
+            except Exception as e:
+                logger.error(f"Ошибка при выполнении рассылки: {e}", exc_info=True)
+                bot.answer_callback_query(call.id, "❌ Ошибка при рассылке")
+
+                error_text = f"""❌ <b>Ошибка при рассылке</b>
+
+Произошла ошибка: {str(e)}
+
+<i>Проверьте логи для подробностей</i>"""
+
+                try:
+                    bot.edit_message_text(
+                        error_text,
+                        chat_id,
+                        message_id,
+                        reply_markup=InlineKeyboardMarkup().add(
+                            InlineKeyboardButton("🔙 В админ-меню", callback_data="admin_menu")
+                        ),
+                        parse_mode='HTML'
+                    )
+                except:
+                    bot.send_message(
+                        chat_id,
+                        error_text,
+                        reply_markup=InlineKeyboardMarkup().add(
+                            InlineKeyboardButton("🔙 В админ-меню", callback_data="admin_menu")
+                        ),
+                        parse_mode='HTML'
+                    )
+
+                # Очищаем состояние
+                if chat_id in user_states:
+                    del user_states[chat_id]
+                if chat_id in user_data:
+                    del user_data[chat_id]
 
         # Отмена рассылки
         elif data == "broadcast_cancel":
