@@ -65,6 +65,9 @@ def register_common_handlers(bot: TeleBot) -> None:
         chat_id = message.chat.id
         logger.info(f"Пользователь {message.from_user.id} запросил информацию о Совете")
 
+        # Сохраняем пользователя
+        save_user_from_message(message)
+
         # Удаляем сообщение пользователя
         delete_message_safe(bot, chat_id, message.message_id)
 
@@ -79,6 +82,9 @@ def register_common_handlers(bot: TeleBot) -> None:
         """Обработчик кнопки 'Руководство Совета'"""
         chat_id = message.chat.id
         logger.info(f"Пользователь {message.from_user.id} запросил информацию о руководстве")
+
+        # Сохраняем пользователя
+        save_user_from_message(message)
 
         # Удаляем сообщение пользователя
         delete_message_safe(bot, chat_id, message.message_id)

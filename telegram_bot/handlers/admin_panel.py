@@ -556,6 +556,10 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                     logger.warning("Попытка рассылки при пустой базе пользователей")
                     return
 
+                # ВАЖНО: Отвечаем на callback query сразу, чтобы кнопка не "зависала"
+                bot.answer_callback_query(call.id, "📢 Рассылка началась...")
+                logger.info("Callback query обработан, начинаем рассылку")
+
                 # Удаляем сообщение с предпросмотром
                 delete_message_safe(bot, chat_id, message_id)
 
@@ -619,8 +623,6 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                     del user_states[chat_id]
                 if chat_id in user_data:
                     del user_data[chat_id]
-
-                bot.answer_callback_query(call.id)
 
             except Exception as e:
                 logger.error(f"Ошибка при выполнении рассылки: {e}", exc_info=True)

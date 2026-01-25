@@ -104,11 +104,13 @@ def save_user_from_message(message: Message) -> None:
     """
     try:
         user = message.from_user
+        logger.debug(f"Сохраняем пользователя {user.id} (@{user.username}) в базу")
         user_manager.add_user(
             user_id=user.id,
             username=user.username,
             first_name=user.first_name,
             last_name=user.last_name
         )
+        logger.debug(f"Пользователь {user.id} сохранён. Всего в базе: {user_manager.get_user_count()}")
     except Exception as e:
         logger.error(f"Ошибка сохранения пользователя: {e}")
