@@ -259,6 +259,8 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
 
         # Редактирование текстов
         elif data == "admin_edit_texts":
+            bot.answer_callback_query(call.id)
+
             stats = message_manager.get_stats()
             text = f"""📝 <b>Редактирование текстов</b>
 
@@ -279,10 +281,11 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                 reply_markup=create_messages_list_keyboard(),
                 parse_mode='HTML'
             )
-            bot.answer_callback_query(call.id)
 
         # Список сообщений (пагинация)
         elif data.startswith("admin_list_"):
+            bot.answer_callback_query(call.id)
+
             page = int(data.split("_")[2])
             stats = message_manager.get_stats()
             text = f"""📝 <b>Редактирование текстов</b>
@@ -304,10 +307,11 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                 reply_markup=create_messages_list_keyboard(page),
                 parse_mode='HTML'
             )
-            bot.answer_callback_query(call.id)
 
         # Просмотр сообщения
         elif data.startswith("admin_view_"):
+            bot.answer_callback_query(call.id)
+
             key = data.replace("admin_view_", "")
             title = message_manager.get_title(key)
             content = message_manager.get(key)
@@ -330,10 +334,11 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                 reply_markup=create_message_actions_keyboard(key),
                 parse_mode='HTML'
             )
-            bot.answer_callback_query(call.id)
 
         # Начать редактирование
         elif data.startswith("admin_edit_"):
+            bot.answer_callback_query(call.id, "✏️ Отправьте новый текст сообщения")
+
             key = data.replace("admin_edit_", "")
             title = message_manager.get_title(key)
             current_text = message_manager.get(key)
@@ -373,11 +378,12 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                 message_id,
                 parse_mode='HTML'
             )
-            bot.answer_callback_query(call.id, "✏️ Отправьте новый текст сообщения")
             logger.info(f"Администратор {call.from_user.id} начал редактирование '{key}'")
 
         # Сброс к дефолту
         elif data.startswith("admin_reset_"):
+            bot.answer_callback_query(call.id, "🔄 Сбрасываю...")
+
             key = data.replace("admin_reset_", "")
             title = message_manager.get_title(key)
 
@@ -397,13 +403,14 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                     reply_markup=create_message_actions_keyboard(key),
                     parse_mode='HTML'
                 )
-                bot.answer_callback_query(call.id, "✅ Сброшено к дефолту")
                 logger.info(f"Администратор {call.from_user.id} сбросил '{key}' к дефолту")
             else:
-                bot.answer_callback_query(call.id, "❌ Ошибка при сбросе")
+                bot.send_message(chat_id, "❌ Ошибка при сбросе")
 
         # Статистика
         elif data == "admin_stats":
+            bot.answer_callback_query(call.id)
+
             stats = message_manager.get_stats()
             text = f"""📊 <b>Статистика</b>
 
@@ -424,10 +431,11 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                 reply_markup=markup,
                 parse_mode='HTML'
             )
-            bot.answer_callback_query(call.id)
 
         # Рассылка
         elif data == "admin_broadcast":
+            bot.answer_callback_query(call.id)
+
             from ..user_manager import user_manager
             user_count = user_manager.get_user_count()
             stats = user_manager.get_stats()
@@ -456,7 +464,6 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                 reply_markup=markup,
                 parse_mode='HTML'
             )
-            bot.answer_callback_query(call.id)
 
             # Устанавливаем состояние ожидания сообщения для рассылки
             from ..states import user_states, UserState
@@ -464,6 +471,8 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
 
         # Сброс всех текстов
         elif data == "admin_reset_all":
+            bot.answer_callback_query(call.id)
+
             text = """⚠️ <b>Подтверждение сброса</b>
 
 Вы уверены, что хотите сбросить <b>ВСЕ</b> тексты к дефолтным значениям?
@@ -483,10 +492,11 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                 reply_markup=markup,
                 parse_mode='HTML'
             )
-            bot.answer_callback_query(call.id)
 
         # Подтверждение сброса всех
         elif data == "admin_reset_all_confirm":
+            bot.answer_callback_query(call.id, "🔄 Сбрасываю все тексты...")
+
             if message_manager.reset_all():
                 text = """✅ <b>Все тексты сброшены!</b>
 
@@ -502,15 +512,14 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                     reply_markup=markup,
                     parse_mode='HTML'
                 )
-                bot.answer_callback_query(call.id, "✅ Все тексты сброшены")
                 logger.warning(f"Администратор {call.from_user.id} сбросил ВСЕ тексты к дефолту")
             else:
-                bot.answer_callback_query(call.id, "❌ Ошибка при сбросе")
+                bot.send_message(chat_id, "❌ Ошибка при сбросе")
 
         # Закрыть админ-панель
         elif data == "admin_close":
-            delete_message_safe(bot, chat_id, message_id)
             bot.answer_callback_query(call.id, "Админ-панель закрыта")
+            delete_message_safe(bot, chat_id, message_id)
 
         # Подтверждение рассылки
         elif data == "broadcast_confirm":
@@ -662,8 +671,9 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
 
         # Отмена рассылки
         elif data == "broadcast_cancel":
-            delete_message_safe(bot, chat_id, message_id)
             bot.answer_callback_query(call.id, "❌ Рассылка отменена")
+
+            delete_message_safe(bot, chat_id, message_id)
 
             # Очищаем состояние
             if chat_id in user_states:
@@ -686,6 +696,8 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
         # Главное меню логов
         elif data == "admin_logs":
             try:
+                bot.answer_callback_query(call.id)
+
                 from ..log_manager import log_manager
 
                 logs_info = log_manager.get_all_logs_info()
@@ -706,7 +718,6 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                     reply_markup=create_logs_menu(),
                     parse_mode='HTML'
                 )
-                bot.answer_callback_query(call.id)
             except Exception as e:
                 logger.error(f"Ошибка при открытии меню логов: {e}", exc_info=True)
                 bot.answer_callback_query(call.id, f"❌ Ошибка: {e}", show_alert=True)
@@ -714,6 +725,9 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
         # Просмотр конкретного лога
         elif data.startswith("admin_log_view_"):
             try:
+                # ВАЖНО: Отвечаем на callback query сразу
+                bot.answer_callback_query(call.id)
+
                 from ..log_manager import log_manager
 
                 category = data.replace("admin_log_view_", "")
@@ -744,7 +758,6 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                     reply_markup=create_log_actions_keyboard(category),
                     parse_mode='HTML'
                 )
-                bot.answer_callback_query(call.id)
             except Exception as e:
                 logger.error(f"Ошибка при просмотре лога: {e}", exc_info=True)
                 bot.answer_callback_query(call.id, f"❌ Ошибка: {e}", show_alert=True)
@@ -773,7 +786,6 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                                 visible_file_name=f"{category}.log"
                             )
                         logger.info(f"Администратор {call.from_user.id} скачал лог {category}")
-                        bot.answer_callback_query(call.id)
                     except Exception as e:
                         error_msg = f"❌ Ошибка отправки файла: {e}"
                         bot.send_message(chat_id, error_msg, parse_mode='HTML')
@@ -799,6 +811,8 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
 
         # Удаление лога
         elif data.startswith("admin_log_delete_"):
+            bot.answer_callback_query(call.id)
+
             from ..log_manager import log_manager
 
             category = data.replace("admin_log_delete_", "")
@@ -826,10 +840,11 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                 reply_markup=markup,
                 parse_mode='HTML'
             )
-            bot.answer_callback_query(call.id)
 
         # Подтверждение удаления лога
         elif data.startswith("admin_log_delete_confirm_"):
+            bot.answer_callback_query(call.id, "🗑️ Удаляю...")
+
             from ..log_manager import log_manager
 
             category = data.replace("admin_log_delete_confirm_", "")
@@ -858,10 +873,11 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                 reply_markup=markup,
                 parse_mode='HTML'
             )
-            bot.answer_callback_query(call.id)
 
         # Очистка всех логов (подтверждение)
         elif data == "admin_log_clear_all_confirm":
+            bot.answer_callback_query(call.id)
+
             text = """⚠️ <b>Подтверждение очистки</b>
 
 Вы уверены, что хотите удалить <b>ВСЕ логи</b>?
@@ -881,10 +897,11 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                 reply_markup=markup,
                 parse_mode='HTML'
             )
-            bot.answer_callback_query(call.id)
 
         # Очистка всех логов (выполнение)
         elif data == "admin_log_clear_all":
+            bot.answer_callback_query(call.id, "🗑️ Удаляю все логи...")
+
             from ..log_manager import log_manager
 
             results = log_manager.clear_all_logs()
@@ -906,11 +923,12 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                 reply_markup=markup,
                 parse_mode='HTML'
             )
-            bot.answer_callback_query(call.id, "✅ Все логи очищены")
             logger.info(f"Администратор {call.from_user.id} очистил все логи")
 
         # Настройки автоочистки
         elif data == "admin_log_autoclean_settings":
+            bot.answer_callback_query(call.id)
+
             from ..log_manager import log_manager
 
             settings = log_manager.get_auto_cleanup_settings()
@@ -938,7 +956,6 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                 reply_markup=create_autoclean_settings_keyboard(),
                 parse_mode='HTML'
             )
-            bot.answer_callback_query(call.id)
 
         # Переключение автоочистки
         elif data == "admin_log_autoclean_toggle":
@@ -950,7 +967,7 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
             log_manager.set_auto_cleanup(new_status, settings['interval_hours'])
 
             status_text = "включена" if new_status else "выключена"
-            bot.answer_callback_query(call.id, f"Автоочистка {status_text}")
+            bot.answer_callback_query(call.id, f"⚙️ Автоочистка {status_text}")
 
             logger.info(f"Администратор {call.from_user.id} {'включил' if new_status else 'выключил'} автоочистку логов")
 
@@ -981,12 +998,12 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
 
         # Установка интервала автоочистки
         elif data.startswith("admin_log_autoclean_interval_"):
+            interval = int(data.replace("admin_log_autoclean_interval_", ""))
+            bot.answer_callback_query(call.id, f"⚙️ Интервал: {interval}ч")
+
             from ..log_manager import log_manager
 
-            interval = int(data.replace("admin_log_autoclean_interval_", ""))
             log_manager.set_auto_cleanup(True, interval)
-
-            bot.answer_callback_query(call.id, f"✅ Интервал изменен на {interval} часов")
 
             logger.info(f"Администратор {call.from_user.id} установил интервал автоочистки {interval}ч")
 
