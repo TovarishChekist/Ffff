@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class MessageManager:
     """Класс для управления текстовыми сообщениями бота"""
 
-    def __init__(self, custom_messages_path: str = "telegram_bot/custom_messages.json"):
+    def __init__(self, custom_messages_path: Optional[str] = None):
         """
         Инициализация менеджера сообщений
 
@@ -23,7 +23,12 @@ class MessageManager:
             custom_messages_path: Путь к файлу с пользовательскими сообщениями
         """
         self.default_messages_path = Path(__file__).parent / "default_messages.json"
-        self.custom_messages_path = Path(custom_messages_path)
+
+        # Если путь не указан, используем директорию бота
+        if custom_messages_path is None:
+            self.custom_messages_path = Path(__file__).parent / "custom_messages.json"
+        else:
+            self.custom_messages_path = Path(custom_messages_path)
 
         self.default_messages = self._load_default_messages()
         self.custom_messages = self._load_custom_messages()
