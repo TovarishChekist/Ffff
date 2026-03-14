@@ -351,6 +351,11 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                 'old_message_id': message_id
             }
 
+            logger.info(f"[EDIT] Установлено состояние ADMIN_EDIT_MESSAGE для chat_id={chat_id}")
+            logger.info(f"[EDIT] Данные: key={key}, title={title}, old_message_id={message_id}")
+            logger.info(f"[EDIT] user_states: {user_states}")
+            logger.info(f"[EDIT] user_data: {user_data}")
+
             text = f"""✏️ <b>Редактирование: {title}</b>
 
 <b>Текущий текст:</b>
@@ -1026,31 +1031,69 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                 parse_mode='HTML'
             )
 
+    # Глобальный обработчик для отладки - ловит ВСЕ необработанные сообщения от администраторов
+    @bot.message_handler(func=lambda m: BotConfig.is_admin(m.from_user.id), content_types=['text'])
+    def debug_unhandled_admin_messages(message: Message):
+        """Отладочный обработчик для перехвата необработанных сообщений от админов"""
+        chat_id = message.chat.id
+        logger.warning(f"[DEBUG] Необработанное сообщение от администратора!")
+        logger.warning(f"[DEBUG] chat_id={chat_id}, user_id={message.from_user.id}")
+        logger.warning(f"[DEBUG] Текст: '{message.text}'")
+        logger.warning(f"[DEBUG] Состояние: {user_states.get(chat_id, 'НЕТ')}")
+        logger.warning(f"[DEBUG] Данные: {user_data.get(chat_id, 'НЕТ')}")
+        logger.warning(f"[DEBUG] Проверка условия ADMIN_EDIT_MESSAGE:")
+        logger.warning(f"[DEBUG]   chat_id in user_states: {chat_id in user_states}")
+        if chat_id in user_states:
+            logger.warning(f"[DEBUG]   user_states[chat_id]: {user_states[chat_id]}")
+            logger.warning(f"[DEBUG]   user_states[chat_id] == UserState.ADMIN_EDIT_MESSAGE: {user_states[chat_id] == UserState.ADMIN_EDIT_MESSAGE}")
+
+        # Отправляем сообщение администратору для отладки
+        bot.reply_to(message, f"⚠️ DEBUG: Сообщение не обработано.\n\nСостояние: {user_states.get(chat_id, 'НЕТ')}\nДанные: {user_data.get(chat_id, 'НЕТ')}")
+
     @bot.message_handler(func=lambda m: m.chat.id in user_states and user_states[m.chat.id] == UserState.ADMIN_EDIT_MESSAGE)
     def process_message_edit(message: Message):
         """Обрабатывает новый текст сообщения от администратора"""
         chat_id = message.chat.id
 
+        logger.info(f"[EDIT] Получено сообщение от chat_id={chat_id}, user_id={message.from_user.id}")
+        logger.info(f"[EDIT] Текущее состояние: {user_states.get(chat_id)}")
+        logger.info(f"[EDIT] Данные пользователя: {user_data.get(chat_id)}")
+
         if not BotConfig.is_admin(message.from_user.id):
+            logger.warning(f"[EDIT] Пользователь {message.from_user.id} не является администратором")
             return
 
         # Проверка на отмену
         if message.text == "/cancel":
+            logger.info(f"[EDIT] Редактирование отменено пользователем {message.from_user.id}")
             del user_states[chat_id]
             del user_data[chat_id]
             bot.reply_to(message, "❌ Редактирование отменено")
             return
 
         # Получаем данные
+        if chat_id not in user_data:
+            logger.error(f"[EDIT] Данные для chat_id={chat_id} не найдены в user_data!")
+            bot.reply_to(message, "❌ Ошибка: данные редактирования потеряны. Попробуйте снова.")
+            if chat_id in user_states:
+                del user_states[chat_id]
+            return
+
         data = user_data[chat_id]
-        key = data['key']
-        title = data['title']
+        key = data.get('key')
+        title = data.get('title')
         old_message_id = data.get('old_message_id')
+
+        logger.info(f"[EDIT] Редактирование ключа: {key}, заголовок: {title}")
 
         # Получаем текст с HTML-форматированием
         # html_text сохраняет форматирование (жирный, курсив, ссылки) из Telegram
         new_text = message.html_text if message.html_text else message.text
+        logger.info(f"[EDIT] Новый текст (длина {len(new_text)}): {new_text[:100]}...")
+
         if message_manager.set(key, new_text):
+            logger.info(f"[EDIT] Текст успешно сохранен в MessageManager")
+
             # Удаляем старое сообщение с инструкцией
             if old_message_id:
                 delete_message_safe(bot, chat_id, old_message_id)
@@ -1075,13 +1118,17 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                 parse_mode='HTML'
             )
 
-            logger.info(f"Администратор {message.from_user.id} обновил текст '{key}'")
+            logger.info(f"[EDIT] Администратор {message.from_user.id} обновил текст '{key}'")
         else:
+            logger.error(f"[EDIT] Ошибка при сохранении текста в MessageManager")
             bot.reply_to(message, "❌ Ошибка при сохранении текста")
 
         # Очищаем состояние
-        del user_states[chat_id]
-        del user_data[chat_id]
+        logger.info(f"[EDIT] Очистка состояния для chat_id={chat_id}")
+        if chat_id in user_states:
+            del user_states[chat_id]
+        if chat_id in user_data:
+            del user_data[chat_id]
 
     @bot.message_handler(func=lambda m: m.chat.id in user_states and user_states[m.chat.id] == UserState.ADMIN_BROADCAST_COMPOSE)
     def process_broadcast_message(message: Message):
