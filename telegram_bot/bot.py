@@ -41,15 +41,25 @@ def setup_logging():
 
 def configure_api():
     """Настраивает параметры Telegram API"""
+    import os
+
     # Увеличиваем таймауты для обработки проблем с подключением
     apihelper.CONNECT_TIMEOUT = BotConfig.CONNECT_TIMEOUT
     apihelper.READ_TIMEOUT = BotConfig.READ_TIMEOUT
 
-    # Настройка прокси (если указан)
+    # Настройка прокси (если указан в .env)
     proxy_dict = BotConfig.get_proxy_dict()
     if proxy_dict:
         apihelper.proxy = proxy_dict
         logging.info(f"Прокси настроен: {proxy_dict}")
+    else:
+        # Явно отключаем прокси, игнорируя системные переменные окружения
+        apihelper.proxy = None
+        # Очищаем переменные окружения прокси для requests/urllib3
+        for var in ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy',
+                    'GLOBAL_AGENT_HTTP_PROXY', 'GLOBAL_AGENT_HTTPS_PROXY']:
+            os.environ.pop(var, None)
+        logging.info("Прокси отключен")
 
 
 def main():
