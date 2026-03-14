@@ -1030,26 +1030,7 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
                 parse_mode='HTML'
             )
 
-    # Глобальный обработчик для отладки - ловит ВСЕ необработанные сообщения от администраторов
-    @bot.message_handler(func=lambda m: BotConfig.is_admin(m.from_user.id), content_types=['text'])
-    def debug_unhandled_admin_messages(message: Message):
-        """Отладочный обработчик для перехвата необработанных сообщений от админов"""
-        chat_id = message.chat.id
-        logger.warning(f"[DEBUG] Необработанное сообщение от администратора!")
-        logger.warning(f"[DEBUG] chat_id={chat_id}, user_id={message.from_user.id}")
-        logger.warning(f"[DEBUG] Текст: '{message.text}'")
-        logger.warning(f"[DEBUG] Состояние: {user_states.get(chat_id, 'НЕТ')}")
-        logger.warning(f"[DEBUG] Данные: {user_data.get(chat_id, 'НЕТ')}")
-        logger.warning(f"[DEBUG] Проверка условия ADMIN_EDIT_MESSAGE:")
-        logger.warning(f"[DEBUG]   chat_id in user_states: {chat_id in user_states}")
-        if chat_id in user_states:
-            logger.warning(f"[DEBUG]   user_states[chat_id]: {user_states[chat_id]}")
-            logger.warning(f"[DEBUG]   user_states[chat_id] == UserState.ADMIN_EDIT_MESSAGE: {user_states[chat_id] == UserState.ADMIN_EDIT_MESSAGE}")
-
-        # Отправляем сообщение администратору для отладки
-        bot.reply_to(message, f"⚠️ DEBUG: Сообщение не обработано.\n\nСостояние: {user_states.get(chat_id, 'НЕТ')}\nДанные: {user_data.get(chat_id, 'НЕТ')}")
-
-    @bot.message_handler(func=lambda m: m.chat.id in user_states and user_states[m.chat.id] == UserState.ADMIN_EDIT_MESSAGE)
+    @bot.message_handler(func=lambda m: m.chat.id in user_states and user_states[m.chat.id] == UserState.ADMIN_EDIT_MESSAGE, content_types=['text'])
     def process_message_edit(message: Message):
         """Обрабатывает новый текст сообщения от администратора"""
         chat_id = message.chat.id
