@@ -471,7 +471,6 @@ def register_admin_panel_handlers(bot: TeleBot) -> None:
             )
 
             # Устанавливаем состояние ожидания сообщения для рассылки
-            from ..states import user_states, UserState
             user_states[chat_id] = UserState.ADMIN_BROADCAST_COMPOSE
 
         # Сброс всех текстов
